@@ -3,10 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Core
 Bundle-SymbolicName: org.palladiosimulator.blockchainsystems.core
 Bundle-Version: 0.0.1.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ClassPath: .
 Export-Package: .,
- org.palladiosimulator.blockchainsystems.core,
  org.palladiosimulator.blockchainsystems.core.behavior,
  org.palladiosimulator.blockchainsystems.core.block,
  org.palladiosimulator.blockchainsystems.core.block.abstractions,
