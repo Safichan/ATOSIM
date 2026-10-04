@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: ThreeSim
 Bundle-SymbolicName: org.palladiosimulator.blockchainsystems.threesim
-Bundle-Version: 0.0.1.202609221429
+Bundle-Version: 0.0.1.202610031328
 Export-Package: .,org.palladiosimulator.blockchainsystems.threesim.behav
  ior,org.palladiosimulator.blockchainsystems.threesim.creation,org.palla
  diosimulator.blockchainsystems.threesim.creation.abstractions,org.palla
@@ -29,5 +29,5 @@ Require-Bundle: org.palladiosimulator.blockchainsystems.bscm,org.palladi
  n="1.5.0"
 Bundle-License: The Apache License, Version 2.0;link="http://www.apache.
  org/licenses/LICENSE-2.0.txt"
-Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=17))"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=21))"
 
