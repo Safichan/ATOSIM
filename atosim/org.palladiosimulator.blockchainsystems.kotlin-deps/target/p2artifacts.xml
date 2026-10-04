@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <?artifactRepository version='1.1.0'?>
 <artifacts size='1'>
-  <artifact classifier='osgi.bundle' id='org.palladiosimulator.blockchainsystems.kotlin-deps' version='0.0.1.202607030842'>
+  <artifact classifier='osgi.bundle' id='org.palladiosimulator.blockchainsystems.kotlin-deps' version='0.0.1.202610041342'>
     <properties size='9'>
-      <property name='artifact.size' value='3749343'/>
-      <property name='download.size' value='3749343'/>
-      <property name='download.checksum.sha-512' value='98071fedf89dccb0c17a6421153dad8fe4e3c34fd261e62875751472e42735979300c33e3b36bbab35cee5cb1c55fcc5a5d393697f4b652502a0afa0309e729c'/>
-      <property name='download.checksum.sha-1' value='8b57c05a4539cff8f1aa6ef14bca92e7bbbffaf1'/>
-      <property name='download.checksum.sha-256' value='f68f2d053f62ad463660c60f49f6d99e588499a8863b5f24dbf80b452982a2ee'/>
+      <property name='artifact.size' value='3749346'/>
+      <property name='download.size' value='3749346'/>
+      <property name='download.checksum.sha-512' value='5e60fa564cda4e653fefa44c260462a6ad0113dd5f3d5a177ac5e469a4158360978bd2ca146f42a2232db8c742d9bf3f641176dec40b83fd2e9d787a1d67cb33'/>
+      <property name='download.checksum.sha-1' value='ee57b563913ae6b553848c44313959caf7c3c5d6'/>
+      <property name='download.checksum.sha-256' value='8b40dfdd6e145e9de135ad73cf386aa4823a914ecb6eb955ee9ddf558a25dca7'/>
       <property name='maven-groupId' value='org.palladiosimulator.blockchainsystems'/>
       <property name='maven-artifactId' value='org.palladiosimulator.blockchainsystems.kotlin-deps'/>
       <property name='maven-version' value='0.0.1-SNAPSHOT'/>

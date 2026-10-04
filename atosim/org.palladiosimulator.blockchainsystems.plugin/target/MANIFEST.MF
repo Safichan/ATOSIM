@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Palladio-BCS-Plugin
 Bundle-SymbolicName: org.palladiosimulator.blockchainsystems.plugin;sing
  leton:=true
-Bundle-Version: 0.0.1.202610031328
+Bundle-Version: 0.0.1.202610041342
 Export-Package: .,org.palladiosimulator.blockchainsystems.plugin,org.pal
  ladiosimulator.blockchainsystems.plugin.json,org.palladiosimulator.bloc
  kchainsystems.plugin.logging,org.palladiosimulator.blockchainsystems.pl

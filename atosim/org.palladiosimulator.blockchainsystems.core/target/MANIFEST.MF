@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Core
 Bundle-SymbolicName: org.palladiosimulator.blockchainsystems.core
-Bundle-Version: 0.0.1.202610031328
+Bundle-Version: 0.0.1.202610041342
 Bundle-ClassPath: .
 Export-Package: .,org.palladiosimulator.blockchainsystems.core.behavior,
  org.palladiosimulator.blockchainsystems.core.block,org.palladiosimulato
