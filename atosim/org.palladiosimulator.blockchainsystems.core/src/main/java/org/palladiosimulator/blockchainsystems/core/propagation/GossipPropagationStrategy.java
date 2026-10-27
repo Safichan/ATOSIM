@@ -2,6 +2,7 @@ package org.palladiosimulator.blockchainsystems.core.propagation;
 
 import org.palladiosimulator.blockchainsystems.core.common.BlockchainNodeObject;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Event;
+import org.palladiosimulator.blockchainsystems.core.system.BlockchainSystemNodeState;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.BlockchainSystemNodeContext;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.Message;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.NodeP2PNetworkInterface;
@@ -31,6 +32,7 @@ public abstract class GossipPropagationStrategy<E extends Propagatable>
     protected abstract void handleElementMessageReceived(Message message, P2PNetworkEndpoint senderNetworkEndpoint);
 
     protected abstract void handleMessageDropped(Message message, P2PNetworkEndpoint recipientNetworkEndpoint);
+    
 
     @Override
     public void setBlockchainSystemNodeContext(BlockchainSystemNodeContext context) {
@@ -50,7 +52,28 @@ public abstract class GossipPropagationStrategy<E extends Propagatable>
     }
 
     private void onMessageReceivedFromNetworkInterface(Message message, P2PNetworkEndpoint senderNetworkEndpoint) {
-        String ct = message.getContentType();
+    	if(_context == null ) return;
+    	
+    	BlockchainSystemNodeState _state = _context.getState();
+    	
+    	if(_state == BlockchainSystemNodeState.CRASHED) return;
+    	
+    	if (isSynchronizationMessage(message)) {
+    		handleSynchronizationMessage(message, senderNetworkEndpoint);
+            return;
+        }
+    	
+    	if (_state == BlockchainSystemNodeState.RECOVERING) {
+            handleMessageDuringRecovery(message, senderNetworkEndpoint);
+            return;
+        }
+    	
+    	handlePropagationMessage(message, senderNetworkEndpoint);
+   
+    }
+    
+    protected void handlePropagationMessage(Message message, P2PNetworkEndpoint senderNetworkEndpoint) {
+    	String ct = message.getContentType();
         if (ct.equals(getInvMessageKey())) {
             handleInvMessageReceived(message, senderNetworkEndpoint);
         } else if (ct.equals(getGetDataMessageKey())) {
@@ -58,6 +81,18 @@ public abstract class GossipPropagationStrategy<E extends Propagatable>
         } else if (ct.equals(getElementMessageKey())) {
             handleElementMessageReceived(message, senderNetworkEndpoint);
         }
+    }
+    
+    protected boolean isSynchronizationMessage(Message message) {
+    	return false;
+    }
+    
+    protected void handleSynchronizationMessage(Message message, P2PNetworkEndpoint senderNetworkEndpoint) {
+       
+    }
+
+    protected void handleMessageDuringRecovery(Message message, P2PNetworkEndpoint senderNetworkEndpoint) {
+    	
     }
 
     private void failedToSendMessageToNetworkInterface(Message message, P2PNetworkEndpoint recipientNetworkEndpoint) {

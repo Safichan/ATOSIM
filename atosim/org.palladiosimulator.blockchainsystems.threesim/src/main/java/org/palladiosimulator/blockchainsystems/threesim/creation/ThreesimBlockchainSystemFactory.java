@@ -33,7 +33,6 @@ import org.palladiosimulator.blockchainsystems.threesim.simulation.TransactionGe
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +65,8 @@ public abstract class ThreesimBlockchainSystemFactory {
     protected String getTopologyId(P2PNetworkCreationResult networkCreationResult) {
         return null;
     }
-
+    
+    // Build the blockchain system with all parameters
     public BlockchainSystemWithParameters createBlockchainSystem(ThreesimSimulationParameters params, long replicationId) {
         long rootSeed = DeterministicSeeds.topologySeed(params.getConfigId(), replicationId);
 

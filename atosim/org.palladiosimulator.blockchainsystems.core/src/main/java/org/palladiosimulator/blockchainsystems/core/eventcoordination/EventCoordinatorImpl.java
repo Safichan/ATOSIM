@@ -13,6 +13,7 @@ public class EventCoordinatorImpl implements EventCoordinator {
 
     private final SystemClockControl _clock;
     private final TerminationCondition _terminationCondition;
+    // Timetstamp and list of events
     private final TreeMap<Long, EffectsTimeSlice> _eventTimeSlices = new TreeMap<>();
     private final HashMap<EventDispatchable, LinkedHashSet<Event>> _eventsPerOrigin = new HashMap<>();
 

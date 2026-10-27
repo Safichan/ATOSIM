@@ -3,6 +3,7 @@ package org.palladiosimulator.blockchainsystems.core.behavior;
 import org.palladiosimulator.blockchainsystems.core.block.abstractions.Block;
 import org.palladiosimulator.blockchainsystems.core.common.BlockchainNodeObject;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Event;
+import org.palladiosimulator.blockchainsystems.core.system.BlockchainSystemNodeState;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.BlockchainSystemNodeBehavior;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.BlockchainSystemNodeContext;
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.Transaction;
@@ -41,7 +42,9 @@ public class HonestBlockchainSystemNodeBehavior extends BlockchainNodeObject
         AppendOutcome outcome = BehaviorUtils.INSTANCE.appendBlockToBlockchainDetailed(block, context);
         if (outcome == AppendOutcome.INCLUDED || outcome == AppendOutcome.FORKING) {
             context.getTrxMemPool().removeTransactions(block.getTransactions());
-            context.getMiningProcess().restartMining();
+            if (context.getState() == BlockchainSystemNodeState.ACTIVE) {
+                context.getMiningProcess().restartMining();
+            }
             context.getBlockPropagationStrategy().distribute(block);
         }
     }

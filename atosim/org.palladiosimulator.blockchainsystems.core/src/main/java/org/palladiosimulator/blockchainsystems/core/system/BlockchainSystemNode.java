@@ -6,8 +6,12 @@ import org.palladiosimulator.blockchainsystems.core.block.abstractions.BlockVali
 import org.palladiosimulator.blockchainsystems.core.common.BlockchainSimulationObject;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Event;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Taggable;
+import org.palladiosimulator.blockchainsystems.core.crashes.BlockSyncTimeoutEvent;
+import org.palladiosimulator.blockchainsystems.core.crashes.NodeCrashEvent;
+import org.palladiosimulator.blockchainsystems.core.crashes.NodeRecoveryEvent;
 import org.palladiosimulator.blockchainsystems.core.geography.GeographicalRegion;
 import org.palladiosimulator.blockchainsystems.core.propagation.PropagationStrategy;
+import org.palladiosimulator.blockchainsystems.core.recovery.Synchronizable;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.Blockchain;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.BlockchainSystemNodeBehavior;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.BlockchainSystemNodeContext;
@@ -37,9 +41,12 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     private final BlockchainSystemNodeBehavior _behavior;
     private final GeographicalRegion _geographicalRegion;
     private final Set<String> _tags;
+    private final Synchronizable _blockSynchronization;
 
     private final BlockchainSystemNodeContext _context;
-
+    
+    private BlockchainSystemNodeState _state = BlockchainSystemNodeState.ACTIVE;
+    
     public BlockchainSystemNode(
             String id,
             String name,
@@ -57,6 +64,7 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
             BlockchainSystemNodeBehavior behavior,
             GeographicalRegion geographicalRegion,
             Set<String> tags
+            
     ) {
         super(id, name);
         _blockPropagationStrategy = blockPropagationStrategy;
@@ -73,6 +81,18 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         _behavior = behavior;
         _geographicalRegion = geographicalRegion;
         _tags = tags;
+        
+        if (blockPropagationStrategy instanceof Synchronizable synchronization) {
+            _blockSynchronization = synchronization;
+            _blockSynchronization.setEventOrigin(this);
+            _blockSynchronization.setOnSynchronizationCompleteCallback(
+            	    this::finishRecovering
+            	);
+        } else {
+            throw new IllegalArgumentException(
+                    "Block propagation must support synchronization."
+            );
+        }
 
         _context = new BlockchainSystemNodeContextImpl(
                 id,
@@ -87,7 +107,8 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
                 _trxMemPool,
                 _orphanBlockPool,
                 _blockFactory,
-                _geographicalRegion
+                _geographicalRegion,
+                () -> _state
         );
     }
 
@@ -108,7 +129,13 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         _blockPropagationStrategy.initialize(getSimulationContext());
         _blockPropagationStrategy.initializeLogger(this);
 
-        _blockValidator.setOnBlockValidatedCallback((block, isValid) -> _behavior.onBlockValidated(block, isValid, _context));
+        _blockValidator.setOnBlockValidatedCallback(
+        		(block, isValid) -> {
+        			_behavior.onBlockValidated(block, isValid, _context);
+        			if (_state == BlockchainSystemNodeState.RECOVERING) {
+        		        _blockSynchronization.onSyncBlockValidated(block);
+        		    }
+        		});
         _blockValidator.initialize(getSimulationContext());
         _blockValidator.initializeLogger(this);
 
@@ -144,7 +171,43 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
 
     @Override
     public void dispatchEvent(Event event) {
+    	if (NodeCrashEvent.EVENT_TYPE.equals(event.getEventType())) {
+    		
+            crash();
+            
+            NodeCrashEvent crashEvent;
+            if(event instanceof NodeCrashEvent) {
+            	crashEvent = (NodeCrashEvent) event;
+            } else {
+            	System.out.println("Not a crash event was passed in.");
+            	return;
+            }
+            
+            long recoveryTime = crashEvent.getOccurrenceTime() + crashEvent.getCrashDuration();
+
+            NodeRecoveryEvent recoveryEvent = new NodeRecoveryEvent(recoveryTime, this);
+            getSimulationContext().getEventCoordinator().raiseEvent(recoveryEvent);
+        }
+    	
+    	else if(NodeRecoveryEvent.EVENT_TYPE.equals(event.getEventType())) {
+    		recover();
+    	}
+    	
+    	else if (BlockSyncTimeoutEvent.EVENT_TYPE.equals(event.getEventType())) {
+    	    handleBlockSyncTimeoutEvent((BlockSyncTimeoutEvent) event);
+    	}
     }
+    
+    
+
+	private void handleBlockSyncTimeoutEvent(BlockSyncTimeoutEvent event) {
+	    if (_state != BlockchainSystemNodeState.RECOVERING) {
+	        return;
+	    }
+	
+	    _blockSynchronization.handleNeighborTimeout(event.getNeighbor());
+	}
+
 
     @Override
     public boolean hasTag(String tag) {
@@ -160,4 +223,34 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     public double getResourcePower() { return _resourcePower; }
     public GeographicalRegion getGeographicalRegion() { return _geographicalRegion; }
     public Blockchain getBlockchain() { return _blockchain; }
+    
+    public BlockchainSystemNodeState getState() {
+    	return _state;
+    }
+    
+    
+    
+    public void crash() {
+    	_state = BlockchainSystemNodeState.CRASHED;
+    	_miningProcess.stopMining();
+    	
+    	System.out.println("Node " + getId() + " crashed.");
+    }
+    
+    public void recover() {
+    	_state = BlockchainSystemNodeState.RECOVERING;
+    	 _blockSynchronization.startSynchronization();
+    	
+    	System.out.println("Node " + getId() + " is recovering.");
+    }
+    
+    public void finishRecovering() {
+    	
+    	if (_state != BlockchainSystemNodeState.RECOVERING) return;
+    	
+    	_state = BlockchainSystemNodeState.ACTIVE;
+    	_miningProcess.restartMining();
+    	
+    	System.out.println("Node " + getId() + " has recovered.");
+    }
 }

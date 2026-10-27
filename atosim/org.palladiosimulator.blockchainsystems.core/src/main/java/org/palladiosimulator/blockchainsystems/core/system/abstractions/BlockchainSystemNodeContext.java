@@ -5,6 +5,7 @@ import org.palladiosimulator.blockchainsystems.core.block.abstractions.BlockFact
 import org.palladiosimulator.blockchainsystems.core.block.abstractions.BlockValidator;
 import org.palladiosimulator.blockchainsystems.core.geography.GeographicalRegion;
 import org.palladiosimulator.blockchainsystems.core.propagation.PropagationStrategy;
+import org.palladiosimulator.blockchainsystems.core.system.BlockchainSystemNodeState;
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.Transaction;
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TransactionSelectionProcess;
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TrxMemPool;
@@ -23,4 +24,5 @@ public interface BlockchainSystemNodeContext {
     BlockFactory getBlockFactory();
     BlockValidator getBlockValidator();
     GeographicalRegion getGeographicalRegion();
+    BlockchainSystemNodeState getState();
 }

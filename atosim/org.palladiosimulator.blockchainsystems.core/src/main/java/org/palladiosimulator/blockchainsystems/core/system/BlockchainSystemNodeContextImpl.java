@@ -1,5 +1,8 @@
 package org.palladiosimulator.blockchainsystems.core.system;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+
 import org.palladiosimulator.blockchainsystems.core.block.abstractions.Block;
 import org.palladiosimulator.blockchainsystems.core.block.abstractions.BlockFactory;
 import org.palladiosimulator.blockchainsystems.core.block.abstractions.BlockValidator;
@@ -29,6 +32,8 @@ public class BlockchainSystemNodeContextImpl implements BlockchainSystemNodeCont
     private final OrphanBlockPool _orphanBlockPool;
     private final BlockFactory _blockFactory;
     private final GeographicalRegion _geographicalRegion;
+    private final Supplier<BlockchainSystemNodeState> _stateSupplier;
+    
 
     public BlockchainSystemNodeContextImpl(
             String id,
@@ -43,7 +48,8 @@ public class BlockchainSystemNodeContextImpl implements BlockchainSystemNodeCont
             TrxMemPool trxMemPool,
             OrphanBlockPool orphanBlockPool,
             BlockFactory blockFactory,
-            GeographicalRegion geographicalRegion
+            GeographicalRegion geographicalRegion,
+            Supplier<BlockchainSystemNodeState> stateSupplier
     ) {
         _id = id;
         _blockPropagationStrategy = blockPropagationStrategy;
@@ -58,6 +64,7 @@ public class BlockchainSystemNodeContextImpl implements BlockchainSystemNodeCont
         _orphanBlockPool = orphanBlockPool;
         _blockFactory = blockFactory;
         _geographicalRegion = geographicalRegion;
+        _stateSupplier = stateSupplier;
     }
 
     @Override public String getId() { return _id; }
@@ -73,4 +80,11 @@ public class BlockchainSystemNodeContextImpl implements BlockchainSystemNodeCont
     @Override public OrphanBlockPool getOrphanBlockPool() { return _orphanBlockPool; }
     @Override public BlockFactory getBlockFactory() { return _blockFactory; }
     @Override public GeographicalRegion getGeographicalRegion() { return _geographicalRegion; }
+
+	@Override
+	public BlockchainSystemNodeState getState() {
+		return _stateSupplier.get();
+	}
+	
+
 }

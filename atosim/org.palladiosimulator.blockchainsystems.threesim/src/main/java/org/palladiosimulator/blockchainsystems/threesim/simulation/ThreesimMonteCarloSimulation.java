@@ -38,7 +38,8 @@ public class ThreesimMonteCarloSimulation
         _simulationParameters = simulationParameters;
         _threesimSimulationParameters = threesimSimulationParameters;
     }
-
+    
+    // Simulation divided in multiple rounds
     @Override
     public ThreesimSimulationRoundResult performSimulationRound(int replicationId) {
         return new ThreesimSimulationRound(
@@ -49,7 +50,8 @@ public class ThreesimMonteCarloSimulation
                 replicationId
         ).run();
     }
-
+    
+    // Get output metrics etc. and return a result object
     @Override
     public ThreesimMonteCarloSimulationResult createSimulationResultFromRoundResults(
             List<ThreesimSimulationRoundResult> results) {
