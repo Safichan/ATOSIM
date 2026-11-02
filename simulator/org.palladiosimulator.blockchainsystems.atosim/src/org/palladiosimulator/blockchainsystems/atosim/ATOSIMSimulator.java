@@ -19,19 +19,22 @@ public class ATOSIMSimulator {
     // ----------------------------------------------------
     private static final Path DEFAULT_TESTMODELS_DIR =
             Paths.get("testmodels");
-
+    
+    // Configuration that is used in the simulations
     private static final Path DEFAULT_BASE_CONFIG_JSON =
             DEFAULT_TESTMODELS_DIR.resolve("configuration.json");
-
+    
+    // Configurations for the attacker
     private static final Path DEFAULT_CSV =
             Paths.get("run_configurations_selfish.csv");
-
+    
+    // Folder for the results
     private static final Path DEFAULT_OUTPUT_DIR =
             Paths.get("indiv_json");
 
     public static void main(String[] args) {
 
-        // Parse named flags from any position; remaining args are positional.
+        // Parse named flags from command line from any position; remaining args are positional.
         String cliAttackType = null;
         Path outputDir = DEFAULT_OUTPUT_DIR;
         Integer rowIndex = null;
@@ -50,11 +53,14 @@ public class ATOSIMSimulator {
                 positional.add(args[i]);
             }
         }
-
+        
+        // If there are no arguments use the defaults
         Path csvPath        = positional.size() >= 1 ? Paths.get(positional.get(0)) : DEFAULT_CSV;
         Path testmodelsDir  = positional.size() >= 2 ? Paths.get(positional.get(1)) : DEFAULT_TESTMODELS_DIR;
         Path baseConfigJson = positional.size() >= 3 ? Paths.get(positional.get(2)) : DEFAULT_BASE_CONFIG_JSON;
-
+        
+        
+        // Initialize the simulator
         BlockchainATOSIMStandalone simulator =
                 new BlockchainATOSIMStandalone(
                         "org.palladiosimulator.blockchainsystems.atosim",
@@ -76,6 +82,7 @@ public class ATOSIMSimulator {
         }
 
         try {
+        	// Load configurations into java map/list
             Map<String, String> baseConfig = loadJsonConfig(baseConfigJson);
             List<Map<String, String>> allRows = loadCsv(csvPath);
 

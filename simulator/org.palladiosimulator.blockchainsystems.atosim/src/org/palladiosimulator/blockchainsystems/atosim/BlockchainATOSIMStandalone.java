@@ -48,7 +48,9 @@ public class BlockchainATOSIMStandalone {
     private String modelProjectName;
     private Class<? extends Plugin> modelProjectActivator;
     private Path outputDir;
-
+    
+    
+    // Initialize simulation environment
     public BlockchainATOSIMStandalone(String modelProjectName,
                                         Class<? extends Plugin> modelProjectActivator,
                                         Path outputDir) {
@@ -68,18 +70,22 @@ public class BlockchainATOSIMStandalone {
 
     public void runSimulation(Map<String, String> configuration, int runId) {
     	
+    	// To measure memory and time later on
     	var startTime = System.nanoTime();
     	
     	Runtime runtime = Runtime.getRuntime();
     	runtime.gc();
     	long before = runtime.totalMemory() - runtime.freeMemory();
-
+    	
+    	// Convert to simulation configurations java object
         var simulationParameters =
                 getSimulationParametersFromConfiguration(configuration);
-
+        
+        // Create a simulation runner with all parameters
         var simulationFactory =
                 new ATOSIMSimulationFactory(simulationParameters, configuration);
-
+        
+        // Run simulation
         var result = simulationFactory.run();
 
         var serializer = new ThreesimSimulationResultSerializer();
@@ -191,7 +197,8 @@ public class BlockchainATOSIMStandalone {
             return false;
         }
     }
-
+    
+    // Converts configuration into Monte Carlo or simple parameters (java objects)
     private SimulationParameters getSimulationParametersFromConfiguration(
             Map<String, String> configuration) {
 

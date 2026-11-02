@@ -6,6 +6,13 @@ import org.palladiosimulator.blockchainsystems.core.block.abstractions.BlockVali
 import org.palladiosimulator.blockchainsystems.core.common.BlockchainSimulationObject;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Event;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Taggable;
+import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.CrashMode;
+import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.NodeMode;
+import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.NormalMode;
+import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.RecoveryMode;
+import org.palladiosimulator.blockchainsystems.core.crashes.recovery.BlocksFirstRecovery;
+import org.palladiosimulator.blockchainsystems.core.crashes.recovery.MessageDispatcher;
+import org.palladiosimulator.blockchainsystems.core.crashes.recovery.RecoveryStrategy;
 import org.palladiosimulator.blockchainsystems.core.geography.GeographicalRegion;
 import org.palladiosimulator.blockchainsystems.core.propagation.PropagationStrategy;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.Blockchain;
@@ -19,6 +26,7 @@ import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.Tra
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TransactionSubmittedCallbackSubscriber;
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TrxMemPool;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class BlockchainSystemNode extends BlockchainSimulationObject implements Taggable, TransactionSubmittedCallbackSubscriber {
@@ -39,6 +47,11 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     private final Set<String> _tags;
 
     private final BlockchainSystemNodeContext _context;
+    
+    private NodeMode _currentMode;
+    private RecoveryStrategy _recoveryStrategy = new BlocksFirstRecovery();
+    private MessageDispatcher _messageDispatcher;
+    
 
     public BlockchainSystemNode(
             String id,
@@ -89,6 +102,8 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
                 _blockFactory,
                 _geographicalRegion
         );
+        
+        _currentMode = new NormalMode(_behavior);
     }
 
     @Override
@@ -98,23 +113,28 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
 
         _transactionPropagationStrategy.setNetworkInterface(_networkInterface);
         _transactionPropagationStrategy.setBlockchainSystemNodeContext(_context);
-        _transactionPropagationStrategy.setOnReceivedCallback(t -> _behavior.onTransactionReceived(t, _context));
+        _transactionPropagationStrategy.setOnReceivedCallback(t -> _currentMode.onTransactionReceived(t, _context));
         _transactionPropagationStrategy.initialize(getSimulationContext());
         _transactionPropagationStrategy.initializeLogger(this);
 
+        _messageDispatcher = new MessageDispatcher(_networkInterface);
+
         _blockPropagationStrategy.setNetworkInterface(_networkInterface);
+
+        _messageDispatcher.setBlockHandler(_blockPropagationStrategy);
+        
         _blockPropagationStrategy.setBlockchainSystemNodeContext(_context);
-        _blockPropagationStrategy.setOnReceivedCallback(b -> _behavior.onBlockReceived(b, _context));
+        _blockPropagationStrategy.setOnReceivedCallback(b -> _currentMode.onBlockReceived(b, _context));
         _blockPropagationStrategy.initialize(getSimulationContext());
         _blockPropagationStrategy.initializeLogger(this);
 
-        _blockValidator.setOnBlockValidatedCallback((block, isValid) -> _behavior.onBlockValidated(block, isValid, _context));
+        _blockValidator.setOnBlockValidatedCallback((block, isValid) -> _currentMode.onBlockValidated(block, isValid, _context));
         _blockValidator.initialize(getSimulationContext());
         _blockValidator.initializeLogger(this);
 
-        _miningProcess.setOnBlockMinedCallback(b -> _behavior.onBlockMined(b, _context));
-        _miningProcess.setPreviousBlockSelectionCallback(() -> _behavior.onPreviousBlockSelection(_context));
-        _miningProcess.setOnCreatingBlockCallback((blockMinedAt, prevHash) -> _behavior.onCreatingBlock(blockMinedAt, prevHash, _context));
+        _miningProcess.setOnBlockMinedCallback(b -> _currentMode.onBlockMined(b, _context));
+        _miningProcess.setPreviousBlockSelectionCallback(() -> _currentMode.onPreviousBlockSelection(_context));
+        _miningProcess.setOnCreatingBlockCallback((blockMinedAt, prevHash) -> _currentMode.onCreatingBlock(blockMinedAt, prevHash, _context));
         _miningProcess.initialize(getSimulationContext());
         _miningProcess.initializeLogger(this);
 
@@ -144,7 +164,25 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
 
     @Override
     public void dispatchEvent(Event event) {
+    	
+    	
     }
+    
+    
+    public void crash() {
+        _miningProcess.stopMining();
+        _currentMode = new CrashMode();
+    }
+    
+    public void recover() {
+    	_miningProcess.restartMining();
+    	_currentMode = new RecoveryMode(_recoveryStrategy);
+    }
+    
+    public void finishRecovery() {
+    	_currentMode = new NormalMode(_behavior);
+    }
+    
 
     @Override
     public boolean hasTag(String tag) {
@@ -160,4 +198,9 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     public double getResourcePower() { return _resourcePower; }
     public GeographicalRegion getGeographicalRegion() { return _geographicalRegion; }
     public Blockchain getBlockchain() { return _blockchain; }
+    
+    public void setRecoveryStrategy(RecoveryStrategy recoveryStrategy) {
+        _recoveryStrategy = Objects.requireNonNull(recoveryStrategy); 
+    }
+    
 }

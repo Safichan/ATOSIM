@@ -45,7 +45,8 @@ public class BlockchainSystemModelLoader {
     };
 
     private ResourceSet resourceSet;
-
+    
+    // Loads and combines everything to one Blockchain system model (java object)
     public BlockchainSystem load(String systemModelUri) {
         return load(systemModelUri, null);
     }

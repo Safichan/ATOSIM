@@ -52,13 +52,16 @@ public class ATOSIMSimulationFactory implements Simulation {
         BlockchainSystemModelLoader loader = new BlockchainSystemModelLoader();
 
         String attackModelFilePath = configuration.getOrDefault("attackModelFilePath", "");
-
+        
+        // Convert configuration to java object
         BlockchainSystem designBlockchainSystem =
                 loader.load(simulationParameters.getBlockchainSystemModelFilePath(), attackModelFilePath);
-
+        
+        // Extract simulation parameters
         ThreesimSimulationParameters threesimSimulationParameters =
                 getThreesimSimulationParametersFromConfiguration(configuration, loader.getAttackScenario());
-
+        
+        // Build blockchain system
         ThreesimBlockchainSystemFactory blockchainSystemFactory =
                 createBlockchainSystemFactory(designBlockchainSystem);
 
@@ -71,7 +74,8 @@ public class ATOSIMSimulationFactory implements Simulation {
         } catch (CoreException e) {
             throw new RuntimeException("Failed to build log output provider", e);
         }
-
+        
+        // Assign simulation an actual object (Monte Carlo or Single)
         if (simulationParameters instanceof MonteCarloSimulationParameters) {
             MonteCarloSimulationProgressMonitorAdapter progressMonitor =
                     new MonteCarloSimulationProgressMonitorAdapter(null);
@@ -101,7 +105,9 @@ public class ATOSIMSimulationFactory implements Simulation {
     public SimulationResult run() {
         return simulation.run();
     }
-
+    
+    
+    // Parse concrete configuration values
     private ThreesimSimulationParameters getThreesimSimulationParametersFromConfiguration(
             Map<String, String> configuration, AttackScenario attackScenario) {
 
@@ -128,7 +134,8 @@ public class ATOSIMSimulationFactory implements Simulation {
                         : TransactionGenerationMode.MEMPOOL;
         boolean staticValidationDelayEnabled =
                 Boolean.parseBoolean(configuration.getOrDefault("staticValidationDelayEnabled", "true"));
-
+        
+        // For attack scenarios
         AttackType attackType;
         Set<String> attackerNodeIds;
         double attackerHashPower;
@@ -287,7 +294,8 @@ public class ATOSIMSimulationFactory implements Simulation {
 
     private ThreesimBlockchainSystemFactory createBlockchainSystemFactory(
             BlockchainSystem designBlockchainSystem) {
-
+    	
+    	// Decide which topology is used, null if nothing is specified
         var networkTopology =
                 designBlockchainSystem.getNetwork().getTopology();
 
