@@ -64,6 +64,17 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
         _networkInterface.send(syncRequest, syncPeer);
     }
     
+    private void requestNextSyncBatch() {
+	    if (syncPeer == null) {
+	        return;
+	    }
+
+	    List<String> blockLocator = createBlockLocator();
+	    Message syncRequest = createSyncRequestMessage(blockLocator);
+
+	    _networkInterface.send(syncRequest, syncPeer);
+	}
+    
     private Message createSyncRequestMessage(List<String> blockLocator) {
         int messageSize = MESSAGE_HEADER_BYTE_SIZE
                 + blockLocator.size() * BLOCK_HASH_BYTE_SIZE;
@@ -250,17 +261,6 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	        requestNextSyncBatch();
 	    }
 		
-	}
-	
-	private void requestNextSyncBatch() {
-	    if (syncPeer == null) {
-	        return;
-	    }
-
-	    List<String> blockLocator = createBlockLocator();
-	    Message syncRequest = createSyncRequestMessage(blockLocator);
-
-	    _networkInterface.send(syncRequest, syncPeer);
 	}
 	
 	private boolean checkSyncRoundCompleted() {
