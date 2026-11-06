@@ -20,6 +20,7 @@ public class MiningProcessImpl extends BlockchainNodeObject implements MiningPro
     private Consumer<Block> _onBlockMinedCallback;
 
     private boolean _isMining = false;
+    private boolean _isMiningEnabled = true;
 
     public MiningProcessImpl(double meanBlockTime, RandomGenerator randomGenerator) {
         _poissonProcess = new PoissonProcess(1.0 / meanBlockTime, randomGenerator);
@@ -75,6 +76,7 @@ public class MiningProcessImpl extends BlockchainNodeObject implements MiningPro
 
     @Override
     public void startMining() {
+    	if (!_isMiningEnabled) return;
         if (_isMining) return;
         scheduleNewBlockMinedEvent();
         _isMining = true;
@@ -83,6 +85,7 @@ public class MiningProcessImpl extends BlockchainNodeObject implements MiningPro
 
     @Override
     public void restartMining() {
+    	if (!_isMiningEnabled) return;
         if (!_isMining) {
             startMining();
             return;
@@ -137,5 +140,10 @@ public class MiningProcessImpl extends BlockchainNodeObject implements MiningPro
         if (!getTraceEventLogger().isEventTypeEnabled(BlockMiningStoppedTraceEvent.EVENT_TYPE)) return;
         getTraceEventLogger().logEvent(new BlockMiningStoppedTraceEvent(
                 getSimulationContext().getSystemClock().getCurrentTime()));
+    }
+    
+    @Override
+    public void setIsMiningEnabled(boolean isMiningEnabled) {
+    	_isMiningEnabled = isMiningEnabled;
     }
 }

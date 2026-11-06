@@ -23,6 +23,7 @@ public interface ReadonlyBlockchain {
     long getPositionOfBlock(Block block);
     long getLength();
     boolean hasBlockWithHash(String hash);
+    Set<String> getPreferredChainBlockHashes();
     Block getBlock(String hash);
     Set<Block> getImmediateSuccessorBlocks(String hash);
     Set<Block> getSuccessorBlocks(String hash);

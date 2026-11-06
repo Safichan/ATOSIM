@@ -21,6 +21,15 @@ public class BlockPropagationStrategy extends GossipPropagationStrategy<Block> {
     private static final int GET_DATA_MESSAGE_BYTE_SIZE = 20;
 
     private final Set<String> _requestedBlockIds = new HashSet<>();
+    
+    @Override
+    public void requestElement(String blockHash, P2PNetworkEndpoint syncPeer) {
+    	if(!_requestedBlockIds.contains(blockHash) && !_context.getBlockchain().hasBlockWithHash(blockHash)) {
+    		_requestedBlockIds.add(blockHash);
+    		Message message = createGetDataMessage(blockHash);
+    		_networkInterface.send(message, syncPeer);
+    	}
+    }
 
     @Override protected String getInvMessageKey() { return INV_MESSAGE_KEY; }
     @Override protected String getGetDataMessageKey() { return GET_DATA_MESSAGE_KEY; }

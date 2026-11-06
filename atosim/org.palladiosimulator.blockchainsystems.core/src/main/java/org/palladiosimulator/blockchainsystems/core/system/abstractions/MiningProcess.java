@@ -14,4 +14,5 @@ public interface MiningProcess extends Traceable {
     void startMining();
     void restartMining();
     void stopMining();
+    void setIsMiningEnabled(boolean isMiningEnabled);
 }

@@ -318,4 +318,23 @@ public class BlockchainImpl extends BlockchainNodeObject implements Blockchain {
             case Confirmed -> BlockType.ConfirmedBlock;
         };
     }
+
+	@Override
+	public Set<String> getPreferredChainBlockHashes() {
+		
+		Set<String> blockHashes = new HashSet<>();
+	    Block currentBlock = getPreferredTipOfLongestChains();
+
+	    while (currentBlock != null) {
+
+	        blockHashes.add(currentBlock.getHash());
+	        String previousHash = currentBlock.getPreviousHash();
+	        currentBlock = previousHash == null
+	                ? null : getBlock(previousHash);
+	        
+	    }
+	    return blockHashes;
+	}
+
+	
 }

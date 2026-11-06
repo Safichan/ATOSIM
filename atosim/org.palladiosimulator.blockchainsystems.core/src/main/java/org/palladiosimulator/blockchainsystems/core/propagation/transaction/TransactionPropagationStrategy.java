@@ -107,4 +107,10 @@ public class TransactionPropagationStrategy extends GossipPropagationStrategy<Tr
                 getSimulationContext().getSystemClock().getCurrentTime(),
                 trx, senderNetworkEndpoint));
     }
+    
+	@Override
+	public void requestElement(String elementId, P2PNetworkEndpoint peer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -6,6 +6,8 @@ import org.palladiosimulator.blockchainsystems.core.block.abstractions.BlockVali
 import org.palladiosimulator.blockchainsystems.core.common.BlockchainSimulationObject;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Event;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Taggable;
+import org.palladiosimulator.blockchainsystems.core.crashes.events.CrashEvent;
+import org.palladiosimulator.blockchainsystems.core.crashes.events.RecoveryEvent;
 import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.CrashMode;
 import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.NodeMode;
 import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.NormalMode;
@@ -26,7 +28,6 @@ import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.Tra
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TransactionSubmittedCallbackSubscriber;
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TrxMemPool;
 
-import java.util.Objects;
 import java.util.Set;
 
 public class BlockchainSystemNode extends BlockchainSimulationObject implements Taggable, TransactionSubmittedCallbackSubscriber {
@@ -49,7 +50,7 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     private final BlockchainSystemNodeContext _context;
     
     private NodeMode _currentMode;
-    private RecoveryStrategy _recoveryStrategy = new BlocksFirstRecovery();
+    private RecoveryStrategy _recoveryStrategy;
     private MessageDispatcher _messageDispatcher;
     
 
@@ -117,11 +118,15 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         _transactionPropagationStrategy.initialize(getSimulationContext());
         _transactionPropagationStrategy.initializeLogger(this);
 
-        _messageDispatcher = new MessageDispatcher(_networkInterface);
-
         _blockPropagationStrategy.setNetworkInterface(_networkInterface);
-
-        _messageDispatcher.setBlockHandler(_blockPropagationStrategy);
+        
+        _recoveryStrategy = new BlocksFirstRecovery(_networkInterface, _context, _blockPropagationStrategy);
+        _recoveryStrategy.setOnRecoveryCompletedCallback(() -> finishRecovery());
+        
+        _messageDispatcher = new MessageDispatcher(_networkInterface);
+        _messageDispatcher.setBlockPropagationStrategy(_blockPropagationStrategy);
+        _messageDispatcher.setRecoveryStrategy(_recoveryStrategy);
+        _messageDispatcher.setNetworkInterface(_networkInterface);
         
         _blockPropagationStrategy.setBlockchainSystemNodeContext(_context);
         _blockPropagationStrategy.setOnReceivedCallback(b -> _currentMode.onBlockReceived(b, _context));
@@ -165,22 +170,41 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     @Override
     public void dispatchEvent(Event event) {
     	
-    	
+    	if (CrashEvent.EVENT_TYPE.equals(event.getEventType())) {
+            crash();
+            CrashEvent crashEvent;
+            if(event instanceof CrashEvent) {
+            	crashEvent = (CrashEvent) event;
+            } else {
+            	System.err.println("Not a crash event was passed in.");
+            	return;
+            }
+            // Schedule the recovery event
+            long recoveryTime = crashEvent.getOccurrenceTime() + crashEvent.getCrashDuration();
+            RecoveryEvent recoveryEvent = new RecoveryEvent(recoveryTime, this);
+            getSimulationContext().getEventCoordinator().raiseEvent(recoveryEvent);
+            
+        } else if(RecoveryEvent.EVENT_TYPE.equals(event.getEventType())) {
+    		recover();
+    	}
     }
     
     
-    public void crash() {
+    private void crash() {
         _miningProcess.stopMining();
+        _miningProcess.setIsMiningEnabled(false);
         _currentMode = new CrashMode();
     }
     
-    public void recover() {
-    	_miningProcess.restartMining();
-    	_currentMode = new RecoveryMode(_recoveryStrategy);
+    private void recover() {
+    	_currentMode = new RecoveryMode(_recoveryStrategy, _behavior);
+    	_recoveryStrategy.startRecovery();
     }
     
-    public void finishRecovery() {
+    private void finishRecovery() {
     	_currentMode = new NormalMode(_behavior);
+    	_miningProcess.setIsMiningEnabled(true);
+    	_miningProcess.restartMining();
     }
     
 
@@ -199,8 +223,8 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     public GeographicalRegion getGeographicalRegion() { return _geographicalRegion; }
     public Blockchain getBlockchain() { return _blockchain; }
     
-    public void setRecoveryStrategy(RecoveryStrategy recoveryStrategy) {
+    /*public void setRecoveryStrategy(RecoveryStrategy recoveryStrategy) {
         _recoveryStrategy = Objects.requireNonNull(recoveryStrategy); 
-    }
+    }*/
     
 }

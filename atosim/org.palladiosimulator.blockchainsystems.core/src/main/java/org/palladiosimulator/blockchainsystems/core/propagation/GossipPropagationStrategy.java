@@ -2,7 +2,7 @@ package org.palladiosimulator.blockchainsystems.core.propagation;
 
 import org.palladiosimulator.blockchainsystems.core.common.BlockchainNodeObject;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Event;
-import org.palladiosimulator.blockchainsystems.core.crashes.recovery.MessageHandler;
+import org.palladiosimulator.blockchainsystems.core.crashes.recovery.P2PMessageHandler;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.BlockchainSystemNodeContext;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.Message;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.NodeP2PNetworkInterface;
@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class GossipPropagationStrategy<E extends Propagatable>
-        extends BlockchainNodeObject implements PropagationStrategy<E>, MessageHandler {
+        extends BlockchainNodeObject implements PropagationStrategy<E>, P2PMessageHandler {
 
     protected NodeP2PNetworkInterface _networkInterface;
     protected Consumer<E> _onReceivedCallback;
@@ -51,13 +51,13 @@ public abstract class GossipPropagationStrategy<E extends Propagatable>
     }
     
     @Override
-    public void handleMessage(Message message, P2PNetworkEndpoint senderNetworkEndpoint) {
+    public void onP2PMessageReceived(Message message, P2PNetworkEndpoint senderNetworkEndpoint) {
     	onMessageReceivedFromNetworkInterface(message, senderNetworkEndpoint);
     }
     
     @Override
-    public void handleDroppedMessage(Message message, P2PNetworkEndpoint recipient) {
-        handleMessageDropped(message, recipient);
+    public void onP2PMessageDropped(Message message, P2PNetworkEndpoint recipient) {
+    	 handleMessageDropped(message, recipient);
     }
 
     private void onMessageReceivedFromNetworkInterface(Message message, P2PNetworkEndpoint senderNetworkEndpoint) {
@@ -77,24 +77,9 @@ public abstract class GossipPropagationStrategy<E extends Propagatable>
 
     @Override
     public void setNetworkInterface(NodeP2PNetworkInterface networkInterface) {
-        if (_networkInterface != null) removeCurrentNetworkInterface();
-        //setNewNetworkInterface(networkInterface);
         _networkInterface = networkInterface;
     }
 
-    private void removeCurrentNetworkInterface() {
-        /*_networkInterface.setOnMessageReceivedCallback(null);
-        _networkInterface.setOnMessageDroppedCallback(null);*/
-        _networkInterface = null;
-    }
-
-    /*private void setNewNetworkInterface(NodeP2PNetworkInterface networkInterface) {
-        _networkInterface = networkInterface;
-        _networkInterface.setOnMessageReceivedCallback(
-                (message, sender) -> this.onMessageReceivedFromNetworkInterface(message, sender));
-        _networkInterface.setOnMessageDroppedCallback(
-                (message, recipient) -> this.failedToSendMessageToNetworkInterface(message, recipient));
-    }*/
 
     @Override
     public void setOnReceivedCallback(Consumer<E> onReceivedCallback) {

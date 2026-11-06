@@ -170,4 +170,10 @@ public class RaceAwareTransactionPropagationStrategy extends GossipPropagationSt
         @Override public String getValueFormatted() { return "Delayed transaction INV gossip"; }
         public Message getMessage() { return _message; }
     }
+
+	@Override
+	public void requestElement(String elementId, P2PNetworkEndpoint peer) {
+		// TODO Auto-generated method stub
+		
+	}
 }
