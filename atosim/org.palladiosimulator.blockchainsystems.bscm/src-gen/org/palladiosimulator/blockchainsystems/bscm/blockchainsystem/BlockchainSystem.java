@@ -23,6 +23,7 @@ import org.palladiosimulator.pcm.core.entity.Entity;
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem#getSpecification <em>Specification</em>}</li>
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem#getTransactionsSpecification <em>Transactions Specification</em>}</li>
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem#getGeographicalRegionsSpecification <em>Geographical Regions Specification</em>}</li>
+ *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem#getCrashSpecification <em>Crash Specification</em>}</li>
  * </ul>
  *
  * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainsystemPackage#getBlockchainSystem()
@@ -117,5 +118,27 @@ public interface BlockchainSystem extends Entity {
 	 * @generated
 	 */
 	void setGeographicalRegionsSpecification(GeographicalRegionsSpecification value);
+
+	/**
+	 * Returns the value of the '<em><b>Crash Specification</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Crash Specification</em>' containment reference.
+	 * @see #setCrashSpecification(CrashSpecification)
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainsystemPackage#getBlockchainSystem_CrashSpecification()
+	 * @model containment="true"
+	 * @generated
+	 */
+	CrashSpecification getCrashSpecification();
+
+	/**
+	 * Sets the value of the '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem#getCrashSpecification <em>Crash Specification</em>}' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Crash Specification</em>' containment reference.
+	 * @see #getCrashSpecification()
+	 * @generated
+	 */
+	void setCrashSpecification(CrashSpecification value);
 
 } // BlockchainSystem

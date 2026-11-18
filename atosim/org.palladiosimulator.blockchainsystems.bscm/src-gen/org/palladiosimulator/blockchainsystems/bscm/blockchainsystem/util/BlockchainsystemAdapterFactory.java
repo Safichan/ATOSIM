@@ -85,6 +85,11 @@ public class BlockchainsystemAdapterFactory extends AdapterFactoryImpl {
 		}
 
 		@Override
+		public Adapter caseCrashSpecification(CrashSpecification object) {
+			return createCrashSpecificationAdapter();
+		}
+
+		@Override
 		public Adapter caseIdentifier(Identifier object) {
 			return createIdentifierAdapter();
 		}
@@ -153,6 +158,20 @@ public class BlockchainsystemAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createBlockchainSystemSpecificationAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification <em>Crash Specification</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification
+	 * @generated
+	 */
+	public Adapter createCrashSpecificationAdapter() {
 		return null;
 	}
 

@@ -217,10 +217,10 @@ public class P2pnetworkPackageImpl extends EPackageImpl implements P2pnetworkPac
 		// Initialize simple dependencies
 		EcorePackage.eINSTANCE.eClass();
 		IdentifierPackage.eINSTANCE.eClass();
-		PcmPackage.eINSTANCE.eClass();
 		ProbfunctionPackage.eINSTANCE.eClass();
 		StoexPackage.eINSTANCE.eClass();
 		UnitsPackage.eINSTANCE.eClass();
+		PcmPackage.eINSTANCE.eClass();
 
 		// Obtain or create and register interdependencies
 		Object registeredPackage = EPackage.Registry.INSTANCE.getEPackage(NodeallocationPackage.eNS_URI);

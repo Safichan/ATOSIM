@@ -123,13 +123,22 @@ public interface BlockchainsystemPackage extends EPackage {
 	int BLOCKCHAIN_SYSTEM__GEOGRAPHICAL_REGIONS_SPECIFICATION = EntityPackage.ENTITY_FEATURE_COUNT + 3;
 
 	/**
+	 * The feature id for the '<em><b>Crash Specification</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION = EntityPackage.ENTITY_FEATURE_COUNT + 4;
+
+	/**
 	 * The number of structural features of the '<em>Blockchain System</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int BLOCKCHAIN_SYSTEM_FEATURE_COUNT = EntityPackage.ENTITY_FEATURE_COUNT + 4;
+	int BLOCKCHAIN_SYSTEM_FEATURE_COUNT = EntityPackage.ENTITY_FEATURE_COUNT + 5;
 
 	/**
 	 * The meta object id for the '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.BlockchainSystemSpecificationImpl <em>Blockchain System Specification</em>}' class.
@@ -206,6 +215,52 @@ public interface BlockchainsystemPackage extends EPackage {
 	int BLOCKCHAIN_SYSTEM_SPECIFICATION_FEATURE_COUNT = EntityPackage.ENTITY_FEATURE_COUNT + 4;
 
 	/**
+	 * The meta object id for the '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.CrashSpecificationImpl <em>Crash Specification</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.CrashSpecificationImpl
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.BlockchainsystemPackageImpl#getCrashSpecification()
+	 * @generated
+	 */
+	int CRASH_SPECIFICATION = 2;
+
+	/**
+	 * The feature id for the '<em><b>Crash Enabled</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CRASH_SPECIFICATION__CRASH_ENABLED = 0;
+
+	/**
+	 * The feature id for the '<em><b>Crash Duration</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CRASH_SPECIFICATION__CRASH_DURATION = 1;
+
+	/**
+	 * The feature id for the '<em><b>Unavailable Node Fraction</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION = 2;
+
+	/**
+	 * The number of structural features of the '<em>Crash Specification</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CRASH_SPECIFICATION_FEATURE_COUNT = 3;
+
+	/**
 	 * Returns the meta object for class '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem <em>Blockchain System</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -260,6 +315,17 @@ public interface BlockchainsystemPackage extends EPackage {
 	EReference getBlockchainSystem_GeographicalRegionsSpecification();
 
 	/**
+	 * Returns the meta object for the containment reference '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem#getCrashSpecification <em>Crash Specification</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Crash Specification</em>'.
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem#getCrashSpecification()
+	 * @see #getBlockchainSystem()
+	 * @generated
+	 */
+	EReference getBlockchainSystem_CrashSpecification();
+
+	/**
 	 * Returns the meta object for class '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystemSpecification <em>Blockchain System Specification</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -312,6 +378,49 @@ public interface BlockchainsystemPackage extends EPackage {
 	 * @generated
 	 */
 	EAttribute getBlockchainSystemSpecification_BlockReward();
+
+	/**
+	 * Returns the meta object for class '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification <em>Crash Specification</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Crash Specification</em>'.
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification
+	 * @generated
+	 */
+	EClass getCrashSpecification();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#isCrashEnabled <em>Crash Enabled</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Crash Enabled</em>'.
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#isCrashEnabled()
+	 * @see #getCrashSpecification()
+	 * @generated
+	 */
+	EAttribute getCrashSpecification_CrashEnabled();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getCrashDuration <em>Crash Duration</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Crash Duration</em>'.
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getCrashDuration()
+	 * @see #getCrashSpecification()
+	 * @generated
+	 */
+	EAttribute getCrashSpecification_CrashDuration();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getUnavailableNodeFraction <em>Unavailable Node Fraction</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Unavailable Node Fraction</em>'.
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getUnavailableNodeFraction()
+	 * @see #getCrashSpecification()
+	 * @generated
+	 */
+	EAttribute getCrashSpecification_UnavailableNodeFraction();
 
 	/**
 	 * Returns the factory that creates the instances of the model.
@@ -380,6 +489,14 @@ public interface BlockchainsystemPackage extends EPackage {
 				.getBlockchainSystem_GeographicalRegionsSpecification();
 
 		/**
+		 * The meta object literal for the '<em><b>Crash Specification</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION = eINSTANCE.getBlockchainSystem_CrashSpecification();
+
+		/**
 		 * The meta object literal for the '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.BlockchainSystemSpecificationImpl <em>Blockchain System Specification</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -424,6 +541,41 @@ public interface BlockchainsystemPackage extends EPackage {
 		 */
 		EAttribute BLOCKCHAIN_SYSTEM_SPECIFICATION__BLOCK_REWARD = eINSTANCE
 				.getBlockchainSystemSpecification_BlockReward();
+
+		/**
+		 * The meta object literal for the '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.CrashSpecificationImpl <em>Crash Specification</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.CrashSpecificationImpl
+		 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.BlockchainsystemPackageImpl#getCrashSpecification()
+		 * @generated
+		 */
+		EClass CRASH_SPECIFICATION = eINSTANCE.getCrashSpecification();
+
+		/**
+		 * The meta object literal for the '<em><b>Crash Enabled</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CRASH_SPECIFICATION__CRASH_ENABLED = eINSTANCE.getCrashSpecification_CrashEnabled();
+
+		/**
+		 * The meta object literal for the '<em><b>Crash Duration</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CRASH_SPECIFICATION__CRASH_DURATION = eINSTANCE.getCrashSpecification_CrashDuration();
+
+		/**
+		 * The meta object literal for the '<em><b>Unavailable Node Fraction</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION = eINSTANCE
+				.getCrashSpecification_UnavailableNodeFraction();
 
 	}
 

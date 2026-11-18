@@ -14,6 +14,7 @@ import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainS
 import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystemSpecification;
 import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainsystemPackage;
 
+import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification;
 import org.palladiosimulator.blockchainsystems.bscm.geographicalregions.GeographicalRegionsSpecification;
 
 import org.palladiosimulator.blockchainsystems.bscm.p2pnetwork.P2PNetwork;
@@ -34,6 +35,7 @@ import org.palladiosimulator.pcm.core.entity.impl.EntityImpl;
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.BlockchainSystemImpl#getSpecification <em>Specification</em>}</li>
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.BlockchainSystemImpl#getTransactionsSpecification <em>Transactions Specification</em>}</li>
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.BlockchainSystemImpl#getGeographicalRegionsSpecification <em>Geographical Regions Specification</em>}</li>
+ *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.BlockchainSystemImpl#getCrashSpecification <em>Crash Specification</em>}</li>
  * </ul>
  *
  * @generated
@@ -78,6 +80,16 @@ public class BlockchainSystemImpl extends EntityImpl implements BlockchainSystem
 	 * @ordered
 	 */
 	protected GeographicalRegionsSpecification geographicalRegionsSpecification;
+
+	/**
+	 * The cached value of the '{@link #getCrashSpecification() <em>Crash Specification</em>}' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getCrashSpecification()
+	 * @generated
+	 * @ordered
+	 */
+	protected CrashSpecification crashSpecification;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -289,10 +301,69 @@ public class BlockchainSystemImpl extends EntityImpl implements BlockchainSystem
 	 * @generated
 	 */
 	@Override
+	public CrashSpecification getCrashSpecification() {
+		return crashSpecification;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public NotificationChain basicSetCrashSpecification(CrashSpecification newCrashSpecification,
+			NotificationChain msgs) {
+		CrashSpecification oldCrashSpecification = crashSpecification;
+		crashSpecification = newCrashSpecification;
+		if (eNotificationRequired()) {
+			ENotificationImpl notification = new ENotificationImpl(this, Notification.SET,
+					BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION, oldCrashSpecification,
+					newCrashSpecification);
+			if (msgs == null)
+				msgs = notification;
+			else
+				msgs.add(notification);
+		}
+		return msgs;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public void setCrashSpecification(CrashSpecification newCrashSpecification) {
+		if (newCrashSpecification != crashSpecification) {
+			NotificationChain msgs = null;
+			if (crashSpecification != null)
+				msgs = ((InternalEObject) crashSpecification).eInverseRemove(this,
+						EOPPOSITE_FEATURE_BASE - BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION, null,
+						msgs);
+			if (newCrashSpecification != null)
+				msgs = ((InternalEObject) newCrashSpecification).eInverseAdd(this,
+						EOPPOSITE_FEATURE_BASE - BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION, null,
+						msgs);
+			msgs = basicSetCrashSpecification(newCrashSpecification, msgs);
+			if (msgs != null)
+				msgs.dispatch();
+		} else if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET,
+					BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION, newCrashSpecification,
+					newCrashSpecification));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
 		switch (featureID) {
 		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__SPECIFICATION:
 			return basicSetSpecification(null, msgs);
+		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION:
+			return basicSetCrashSpecification(null, msgs);
 		}
 		return super.eInverseRemove(otherEnd, featureID, msgs);
 	}
@@ -319,6 +390,8 @@ public class BlockchainSystemImpl extends EntityImpl implements BlockchainSystem
 			if (resolve)
 				return getGeographicalRegionsSpecification();
 			return basicGetGeographicalRegionsSpecification();
+		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION:
+			return getCrashSpecification();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -342,6 +415,9 @@ public class BlockchainSystemImpl extends EntityImpl implements BlockchainSystem
 			return;
 		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__GEOGRAPHICAL_REGIONS_SPECIFICATION:
 			setGeographicalRegionsSpecification((GeographicalRegionsSpecification) newValue);
+			return;
+		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION:
+			setCrashSpecification((CrashSpecification) newValue);
 			return;
 		}
 		super.eSet(featureID, newValue);
@@ -367,6 +443,9 @@ public class BlockchainSystemImpl extends EntityImpl implements BlockchainSystem
 		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__GEOGRAPHICAL_REGIONS_SPECIFICATION:
 			setGeographicalRegionsSpecification((GeographicalRegionsSpecification) null);
 			return;
+		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION:
+			setCrashSpecification((CrashSpecification) null);
+			return;
 		}
 		super.eUnset(featureID);
 	}
@@ -387,6 +466,8 @@ public class BlockchainSystemImpl extends EntityImpl implements BlockchainSystem
 			return transactionsSpecification != null;
 		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__GEOGRAPHICAL_REGIONS_SPECIFICATION:
 			return geographicalRegionsSpecification != null;
+		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION:
+			return crashSpecification != null;
 		}
 		return super.eIsSet(featureID);
 	}

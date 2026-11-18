@@ -144,10 +144,10 @@ public class NodeallocationPackageImpl extends EPackageImpl implements Nodealloc
 		// Initialize simple dependencies
 		EcorePackage.eINSTANCE.eClass();
 		IdentifierPackage.eINSTANCE.eClass();
-		PcmPackage.eINSTANCE.eClass();
 		ProbfunctionPackage.eINSTANCE.eClass();
 		StoexPackage.eINSTANCE.eClass();
 		UnitsPackage.eINSTANCE.eClass();
+		PcmPackage.eINSTANCE.eClass();
 
 		// Obtain or create and register interdependencies
 		Object registeredPackage = EPackage.Registry.INSTANCE.getEPackage(NodesystemPackage.eNS_URI);

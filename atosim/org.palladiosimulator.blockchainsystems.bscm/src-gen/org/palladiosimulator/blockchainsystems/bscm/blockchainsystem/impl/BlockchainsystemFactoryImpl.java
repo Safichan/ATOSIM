@@ -60,6 +60,8 @@ public class BlockchainsystemFactoryImpl extends EFactoryImpl implements Blockch
 			return createBlockchainSystem();
 		case BlockchainsystemPackage.BLOCKCHAIN_SYSTEM_SPECIFICATION:
 			return createBlockchainSystemSpecification();
+		case BlockchainsystemPackage.CRASH_SPECIFICATION:
+			return createCrashSpecification();
 		default:
 			throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -85,6 +87,17 @@ public class BlockchainsystemFactoryImpl extends EFactoryImpl implements Blockch
 	public BlockchainSystemSpecification createBlockchainSystemSpecification() {
 		BlockchainSystemSpecificationImpl blockchainSystemSpecification = new BlockchainSystemSpecificationImpl();
 		return blockchainSystemSpecification;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public CrashSpecification createCrashSpecification() {
+		CrashSpecificationImpl crashSpecification = new CrashSpecificationImpl();
+		return crashSpecification;
 	}
 
 	/**

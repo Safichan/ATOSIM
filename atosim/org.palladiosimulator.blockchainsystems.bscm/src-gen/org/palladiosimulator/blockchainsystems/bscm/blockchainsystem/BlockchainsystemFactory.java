@@ -41,6 +41,15 @@ public interface BlockchainsystemFactory extends EFactory {
 	BlockchainSystemSpecification createBlockchainSystemSpecification();
 
 	/**
+	 * Returns a new object of class '<em>Crash Specification</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Crash Specification</em>'.
+	 * @generated
+	 */
+	CrashSpecification createCrashSpecification();
+
+	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

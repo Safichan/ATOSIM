@@ -137,10 +137,10 @@ public class NodeenvironmentPackageImpl extends EPackageImpl implements Nodeenvi
 		// Initialize simple dependencies
 		EcorePackage.eINSTANCE.eClass();
 		IdentifierPackage.eINSTANCE.eClass();
-		PcmPackage.eINSTANCE.eClass();
 		ProbfunctionPackage.eINSTANCE.eClass();
 		StoexPackage.eINSTANCE.eClass();
 		UnitsPackage.eINSTANCE.eClass();
+		PcmPackage.eINSTANCE.eClass();
 
 		// Obtain or create and register interdependencies
 		Object registeredPackage = EPackage.Registry.INSTANCE.getEPackage(NodeallocationPackage.eNS_URI);

@@ -27,6 +27,7 @@ import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainS
 import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainsystemFactory;
 import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainsystemPackage;
 
+import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification;
 import org.palladiosimulator.blockchainsystems.bscm.blockchainsystemComponentRepository.BlockchainsystemComponentRepositoryPackage;
 
 import org.palladiosimulator.blockchainsystems.bscm.blockchainsystemComponentRepository.impl.BlockchainsystemComponentRepositoryPackageImpl;
@@ -85,6 +86,13 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 	private EClass blockchainSystemSpecificationEClass = null;
 
 	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass crashSpecificationEClass = null;
+
+	/**
 	 * Creates an instance of the model <b>Package</b>, registered with
 	 * {@link org.eclipse.emf.ecore.EPackage.Registry EPackage.Registry} by the package
 	 * package URI value.
@@ -137,10 +145,10 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 		// Initialize simple dependencies
 		EcorePackage.eINSTANCE.eClass();
 		IdentifierPackage.eINSTANCE.eClass();
-		PcmPackage.eINSTANCE.eClass();
 		ProbfunctionPackage.eINSTANCE.eClass();
 		StoexPackage.eINSTANCE.eClass();
 		UnitsPackage.eINSTANCE.eClass();
+		PcmPackage.eINSTANCE.eClass();
 
 		// Obtain or create and register interdependencies
 		Object registeredPackage = EPackage.Registry.INSTANCE.getEPackage(NodeallocationPackage.eNS_URI);
@@ -268,6 +276,16 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 	 * @generated
 	 */
 	@Override
+	public EReference getBlockchainSystem_CrashSpecification() {
+		return (EReference) blockchainSystemEClass.getEStructuralFeatures().get(4);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public EClass getBlockchainSystemSpecification() {
 		return blockchainSystemSpecificationEClass;
 	}
@@ -318,6 +336,46 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 	 * @generated
 	 */
 	@Override
+	public EClass getCrashSpecification() {
+		return crashSpecificationEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public EAttribute getCrashSpecification_CrashEnabled() {
+		return (EAttribute) crashSpecificationEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public EAttribute getCrashSpecification_CrashDuration() {
+		return (EAttribute) crashSpecificationEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public EAttribute getCrashSpecification_UnavailableNodeFraction() {
+		return (EAttribute) crashSpecificationEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public BlockchainsystemFactory getBlockchainsystemFactory() {
 		return (BlockchainsystemFactory) getEFactoryInstance();
 	}
@@ -347,6 +405,7 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 		createEReference(blockchainSystemEClass, BLOCKCHAIN_SYSTEM__SPECIFICATION);
 		createEReference(blockchainSystemEClass, BLOCKCHAIN_SYSTEM__TRANSACTIONS_SPECIFICATION);
 		createEReference(blockchainSystemEClass, BLOCKCHAIN_SYSTEM__GEOGRAPHICAL_REGIONS_SPECIFICATION);
+		createEReference(blockchainSystemEClass, BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION);
 
 		blockchainSystemSpecificationEClass = createEClass(BLOCKCHAIN_SYSTEM_SPECIFICATION);
 		createEAttribute(blockchainSystemSpecificationEClass, BLOCKCHAIN_SYSTEM_SPECIFICATION__MEAN_BLOCK_TIME);
@@ -354,6 +413,11 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 				BLOCKCHAIN_SYSTEM_SPECIFICATION__NUM_OF_REQUIRED_SECURITY_CONFIRMATIONS);
 		createEAttribute(blockchainSystemSpecificationEClass, BLOCKCHAIN_SYSTEM_SPECIFICATION__MAX_BLOCK_SIZE);
 		createEAttribute(blockchainSystemSpecificationEClass, BLOCKCHAIN_SYSTEM_SPECIFICATION__BLOCK_REWARD);
+
+		crashSpecificationEClass = createEClass(CRASH_SPECIFICATION);
+		createEAttribute(crashSpecificationEClass, CRASH_SPECIFICATION__CRASH_ENABLED);
+		createEAttribute(crashSpecificationEClass, CRASH_SPECIFICATION__CRASH_DURATION);
+		createEAttribute(crashSpecificationEClass, CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION);
 	}
 
 	/**
@@ -415,6 +479,9 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 				theGeographicalregionsPackage.getGeographicalRegionsSpecification(), null,
 				"GeographicalRegionsSpecification", null, 1, 1, BlockchainSystem.class, !IS_TRANSIENT, !IS_VOLATILE,
 				IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEReference(getBlockchainSystem_CrashSpecification(), this.getCrashSpecification(), null,
+				"CrashSpecification", null, 0, 1, BlockchainSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE,
+				IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(blockchainSystemSpecificationEClass, BlockchainSystemSpecification.class,
 				"BlockchainSystemSpecification", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -430,6 +497,18 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 		initEAttribute(getBlockchainSystemSpecification_BlockReward(), theEcorePackage.getEDouble(), "BlockReward",
 				null, 0, 1, BlockchainSystemSpecification.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE,
 				!IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(crashSpecificationEClass, CrashSpecification.class, "CrashSpecification", !IS_ABSTRACT,
+				!IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getCrashSpecification_CrashEnabled(), theEcorePackage.getEBoolean(), "crashEnabled", null, 0, 1,
+				CrashSpecification.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE,
+				!IS_DERIVED, IS_ORDERED);
+		initEAttribute(getCrashSpecification_CrashDuration(), theEcorePackage.getEDouble(), "crashDuration", null, 0, 1,
+				CrashSpecification.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE,
+				!IS_DERIVED, IS_ORDERED);
+		initEAttribute(getCrashSpecification_UnavailableNodeFraction(), ecorePackage.getEDouble(),
+				"unavailableNodeFraction", null, 0, 1, CrashSpecification.class, !IS_TRANSIENT, !IS_VOLATILE,
+				IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource
 		createResource(eNS_URI);
