@@ -126,7 +126,9 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         _messageDispatcher = new MessageDispatcher(_networkInterface);
         _messageDispatcher.setBlockPropagationStrategy(_blockPropagationStrategy);
         _messageDispatcher.setRecoveryStrategy(_recoveryStrategy);
+        _messageDispatcher.setTransactionPropagationStrategy(_transactionPropagationStrategy);
         _messageDispatcher.setNetworkInterface(_networkInterface);
+        _messageDispatcher.setCrashStateSupplier(() -> _currentMode instanceof CrashMode);
         
         _blockPropagationStrategy.setBlockchainSystemNodeContext(_context);
         _blockPropagationStrategy.setOnReceivedCallback(b -> _currentMode.onBlockReceived(b, _context));
@@ -171,10 +173,12 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     public void dispatchEvent(Event event) {
     	
     	if (CrashEvent.EVENT_TYPE.equals(event.getEventType())) {
-            crash();
+    		if(!(_currentMode instanceof NormalMode)) return;
+    		
             CrashEvent crashEvent;
             if(event instanceof CrashEvent) {
             	crashEvent = (CrashEvent) event;
+            	crash();
             } else {
             	System.err.println("Not a crash event was passed in.");
             	return;
@@ -185,6 +189,7 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
             getSimulationContext().getEventCoordinator().raiseEvent(recoveryEvent);
             
         } else if(RecoveryEvent.EVENT_TYPE.equals(event.getEventType())) {
+        	if(!(_currentMode instanceof CrashMode)) return;
     		recover();
     	}
     }
@@ -202,9 +207,18 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     }
     
     private void finishRecovery() {
+    	if(!(_currentMode instanceof RecoveryMode)) return;
     	_currentMode = new NormalMode(_behavior);
     	_miningProcess.setIsMiningEnabled(true);
     	_miningProcess.restartMining();
+    }
+    
+    public boolean isRecovering() {
+    	return _currentMode instanceof RecoveryMode;
+    }
+ 
+    public boolean isCrashed() {
+    	return _currentMode instanceof CrashMode;
     }
     
 

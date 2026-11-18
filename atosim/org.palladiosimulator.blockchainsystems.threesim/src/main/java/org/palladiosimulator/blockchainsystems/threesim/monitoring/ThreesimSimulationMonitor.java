@@ -179,6 +179,9 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
     // one of the first few rounds", per DiagnosticPropagationDumpWriter's round-based sampling
     // window -- not used anywhere in decision logic, event handling, or timestamp computation.
     private final int _replicationId;
+    
+    private boolean _nodesWereUnavailable = false;
+    private long _allNodesOperationalSince = -1L;
 
     public ThreesimSimulationMonitor(
             LongestChainExceededMaxLengthCondition maxBlockchainLengthCondition,
@@ -316,9 +319,21 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
 
         } else if (ChainReorganizedTraceEvent.EVENT_TYPE.equals(event.getEventType())) {
             ChainReorganizedTraceEvent reorgEvent = (ChainReorganizedTraceEvent) event;
-            _chainReorganizations.add(new ChainReorganizationOccurrence(logOrigin.getId(), reorgEvent, isAttackerCaused(reorgEvent)));
-            _lastReorgTimestamp = reorgEvent.getOccurrenceTime();
-
+            
+            boolean duringRecovery = _nodes.stream()
+            		.filter(node -> node.getId().equals(logOrigin.getId()))
+            		.findFirst()
+            		.map(BlockchainSystemNode::isRecovering)
+            		.orElse(false);
+            
+            		_chainReorganizations.add(new ChainReorganizationOccurrence(
+            				logOrigin.getId(), 
+            				reorgEvent, 
+							isAttackerCaused(reorgEvent), 
+							duringRecovery));
+            		
+            		if(!duringRecovery) _lastReorgTimestamp = reorgEvent.getOccurrenceTime();
+            
         } else if (AttackPhaseTransitionTraceEvent.EVENT_TYPE.equals(event.getEventType())) {
             AttackPhaseTransitionTraceEvent e = (AttackPhaseTransitionTraceEvent) event;
             if (_simulationParameters.getAttackType() == AttackType.LEAD_STUBBORN_MINING
@@ -344,6 +359,13 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
             }
         }
     }
+    
+    private List<ChainReorganizationOccurrence> getNonRecoveryChainReorganizations() {
+    	return _chainReorganizations
+    			.stream()
+    			.filter(occurrance -> !occurrance.isDuringRecovery())
+    			.toList();
+    	}
 
     @Override
     public boolean shouldTerminate() {

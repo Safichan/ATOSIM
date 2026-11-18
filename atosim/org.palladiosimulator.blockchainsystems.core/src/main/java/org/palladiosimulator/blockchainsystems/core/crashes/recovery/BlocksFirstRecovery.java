@@ -33,10 +33,12 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	private Queue<String> pendingRequestQueue = new ArrayDeque<>();
 	// Stores all block hashes that await a response from the sync peer
 	private List<String> awaitingResponses = new ArrayList<>();
+	// All block hashes that have to be validated
 	private Set<String> awaitingValidations = new HashSet<>();
 	
 	private P2PNetworkEndpoint syncPeer;
 	private Runnable onRecoveryCompletedCallback;
+	private long _recoveryGeneration = 0;
 	
 	public BlocksFirstRecovery(NodeP2PNetworkInterface networkInterface, BlockchainSystemNodeContext context,
     		PropagationStrategy<Block> blockPropagationStrategy) {
@@ -49,12 +51,15 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
     @Override
     public void startRecovery() {
     	
+    	_recoveryGeneration++;
+    	    	
+    	pendingRequestQueue.clear();
+    	awaitingResponses.clear();
+    	awaitingValidations.clear();
+    	
     	syncPeer = selectSyncPeer();
 
         if (syncPeer == null) {
-        	// TODO Handle when there is no available neighbor
-        	// TODO Handle when neighbor does not respond
-        	// TODO Handle when a message gets a timeout
             return;
         }
         
@@ -77,24 +82,30 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
     
     private Message createSyncRequestMessage(List<String> blockLocator) {
         int messageSize = MESSAGE_HEADER_BYTE_SIZE
+        		+ Long.BYTES
                 + blockLocator.size() * BLOCK_HASH_BYTE_SIZE;
-
+        
+        BlockSyncRequest request = new BlockSyncRequest(_recoveryGeneration, blockLocator);
+       
         return new MessageImpl(
-                blockLocator,
+                request,
                 RecoveryMessageTypes.BLOCK_SYNC_REQUEST,
                 messageSize
         );
     }
     
-    private Message createSyncResponseMessage(List<String> missingBlockHashes) {
+    private Message createSyncResponseMessage(List<String> missingBlockHashes, long recoveryNumber) {
 	    int messageSize = MESSAGE_HEADER_BYTE_SIZE
+	    		+ Long.BYTES
 	            + missingBlockHashes.size() * BLOCK_HASH_BYTE_SIZE;
 
-	    return new MessageImpl(
-	            missingBlockHashes,
-	            RecoveryMessageTypes.BLOCK_SYNC_RESPONSE,
-	            messageSize
-	    );
+	    BlockSyncResponse response = new BlockSyncResponse(recoveryNumber, missingBlockHashes);
+
+		return new MessageImpl(
+					response,
+					RecoveryMessageTypes.BLOCK_SYNC_RESPONSE,
+					messageSize
+		);
 	}
     
     // Selects any sync peer
@@ -151,19 +162,14 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
    
 	
 	private void handleSyncRequest(Message message, P2PNetworkEndpoint sender) {
-		List<String> blockLocator;
-		
-		// Check if message content is indeed a List of Strings extract the content
-		if (message.getContent() instanceof List<?> list 
-				&& list.stream().allMatch(String.class::isInstance)) {
-
-			blockLocator = list.stream()
-		            .map(String.class::cast)
-		            .toList();
-		} else {
-			System.err.println("The block locator has to be a list of strings");
+		if (!(message.getContent() instanceof BlockSyncRequest request)) {
+			System.err.println("Invalid BLOCK_SYNC_REQUEST content");
 			return;
 		}
+
+		List<String> blockLocator = request.getBlockLocator();
+		long recoveryGeneration = request.getRecoveryGeneration();
+			 		
 		
 	    String commonAncestorHash = "";
 	    Set<String> preferredChainHashes = _context.getBlockchain().getPreferredChainBlockHashes();
@@ -202,25 +208,26 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 				.map(Block::getHash)
 				.toList();
 	    
-	    Message responseMessage = createSyncResponseMessage(missingBlockHashes);
+	    Message responseMessage = createSyncResponseMessage(missingBlockHashes, recoveryGeneration);
 	    
 	    _networkInterface.send(responseMessage, sender);
 	}
 	
 	private void handleSyncResponse(Message message, P2PNetworkEndpoint sender) {
-		List<String> missingBlockHashes;
-		
-		// Check if message content is indeed a List of Strings extract the content
-		if (message.getContent() instanceof List<?> list 
-				&& list.stream().allMatch(String.class::isInstance)) {
-
-			missingBlockHashes = list.stream()
-		            .map(String.class::cast)
-		            .toList();
-		} else {
-			System.err.println("Sync response has not a list of blocks");
+		if (!(message.getContent() instanceof BlockSyncResponse response)) {
+			System.err.println("Invalid BLOCK_SYNC_RESPONSE content");
 			return;
 		}
+
+		if (response.getRecoveryGeneration() != _recoveryGeneration) {
+			return;
+		}
+		
+		if (!sender.equals(syncPeer)) {
+			return;
+		}
+		
+		List<String> missingBlockHashes = response.getMissingBlockHashes(); 		
 		
 		// Add all block hashes to the queue
 	    for (String hash : missingBlockHashes) {

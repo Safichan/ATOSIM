@@ -1,5 +1,7 @@
 package org.palladiosimulator.blockchainsystems.core.crashes.recovery;
 
+import java.util.function.BooleanSupplier;
+
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.Message;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.NodeP2PNetworkInterface;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.P2PNetworkEndpoint;
@@ -12,12 +14,16 @@ public class MessageDispatcher {
 	private NodeP2PNetworkInterface _networkInterface;
 	private P2PMessageHandler _blockPropagationStrategy;
 	private P2PMessageHandler _recoveryStrategy;
+	private P2PMessageHandler _transactionPropagationStrategy;
+	private BooleanSupplier _crashStateSupplier = () -> false;
 	
 	public MessageDispatcher(NodeP2PNetworkInterface networkInterface) {
         _networkInterface = networkInterface;
     }
 	
 	public void onMessageReceived(Message message, P2PNetworkEndpoint sender) {
+		
+		if (_crashStateSupplier.getAsBoolean()) return;
 
         switch (message.getContentType()) {
             case "BLOCK_INV", "BLOCK_GET_DATA", "BLOCK_MSG" -> {
@@ -30,11 +36,18 @@ public class MessageDispatcher {
                     _recoveryStrategy.onP2PMessageReceived(message, sender);
                 }
             }
+            case "TRX_INV", "TRX_GET_DATA", "TRX_MSG" -> {
+            	if (_transactionPropagationStrategy != null) {
+            		_transactionPropagationStrategy.onP2PMessageReceived(message, sender);
+                }
+            }
         }
     }
 
     public void onMessageDropped(Message message, P2PNetworkEndpoint recipient) {
-
+    	
+    	if (_crashStateSupplier.getAsBoolean()) return;
+    	
         switch (message.getContentType()) {
             case "BLOCK_INV", "BLOCK_GET_DATA", "BLOCK_MSG" -> {
             	if (_blockPropagationStrategy != null) {
@@ -46,6 +59,11 @@ public class MessageDispatcher {
                     _recoveryStrategy.onP2PMessageDropped(message, recipient);
                 }
             }
+            case "TRX_INV", "TRX_GET_DATA", "TRX_MSG" -> {
+            	if (_transactionPropagationStrategy != null) {
+            		_transactionPropagationStrategy.onP2PMessageReceived(message, recipient);
+                }
+            }
         }
     }
 
@@ -55,6 +73,14 @@ public class MessageDispatcher {
 	
 	public void setRecoveryStrategy(P2PMessageHandler recoveryStrategy) {
 	    _recoveryStrategy = recoveryStrategy;
+	}
+	
+	public void setTransactionPropagationStrategy(P2PMessageHandler transactionStrategy) {
+		_transactionPropagationStrategy = transactionStrategy;
+	}
+	
+	public void setCrashStateSupplier(BooleanSupplier crashStateSupplier) {
+		_crashStateSupplier = crashStateSupplier;
 	}
 
 

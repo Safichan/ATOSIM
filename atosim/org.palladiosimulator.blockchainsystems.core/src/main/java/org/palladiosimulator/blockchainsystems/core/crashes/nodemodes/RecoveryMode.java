@@ -6,7 +6,7 @@ import org.palladiosimulator.blockchainsystems.core.system.abstractions.Blockcha
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.BlockchainSystemNodeContext;
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.Transaction;
 
-public class RecoveryMode implements NodeMode{
+public class RecoveryMode implements NodeMode {
 	
 	private final RecoveryStrategy recoveryStrategy;
 	private final BlockchainSystemNodeBehavior behavior;
@@ -32,6 +32,9 @@ public class RecoveryMode implements NodeMode{
 	public void onBlockValidated(Block block, boolean isValid, BlockchainSystemNodeContext context) {
 		behavior.onBlockValidated(block, isValid, context);
 		
+		if (isValid) {
+			recoveryStrategy.onBlockValidated(block.getHash());
+		}
 	}
 
 	@Override
