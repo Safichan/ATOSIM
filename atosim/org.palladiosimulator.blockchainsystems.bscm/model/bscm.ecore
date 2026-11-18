@@ -156,7 +156,8 @@
           lowerBound="1" eType="#//transactions/TransactionsSpecification"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="GeographicalRegionsSpecification"
           lowerBound="1" eType="#//geographicalregions/GeographicalRegionsSpecification"/>
-      <eStructuralFeatures xsi:type="ecore:EReference" name="CrashSpecification" eType="#//blockchainsystem/CrashSpecification"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="CrashSpecification" eType="#//blockchainsystem/CrashSpecification"
+          containment="true"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="BlockchainSystemSpecification" eSuperTypes="platform:/plugin/org.palladiosimulator.pcm/model/pcm.ecore#//core/entity/Entity">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="MeanBlockTime" lowerBound="1"
