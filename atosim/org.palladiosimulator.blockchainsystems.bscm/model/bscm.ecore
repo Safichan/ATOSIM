@@ -156,6 +156,7 @@
           lowerBound="1" eType="#//transactions/TransactionsSpecification"/>
       <eStructuralFeatures xsi:type="ecore:EReference" name="GeographicalRegionsSpecification"
           lowerBound="1" eType="#//geographicalregions/GeographicalRegionsSpecification"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="CrashSpecification" eType="#//blockchainsystem/CrashSpecification"/>
     </eClassifiers>
     <eClassifiers xsi:type="ecore:EClass" name="BlockchainSystemSpecification" eSuperTypes="platform:/plugin/org.palladiosimulator.pcm/model/pcm.ecore#//core/entity/Entity">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="MeanBlockTime" lowerBound="1"
@@ -165,6 +166,12 @@
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="MaxBlockSize" lowerBound="1"
           eType="ecore:EDataType platform:/plugin/org.eclipse.emf.ecore/model/Ecore.ecore#//EInt"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="BlockReward" eType="ecore:EDataType platform:/plugin/org.eclipse.emf.ecore/model/Ecore.ecore#//EDouble"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="CrashSpecification">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="crashEnabled" eType="ecore:EDataType platform:/plugin/org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="crashDuration" eType="ecore:EDataType platform:/plugin/org.eclipse.emf.ecore/model/Ecore.ecore#//EDouble"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="unavailableNodeFraction"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
     </eClassifiers>
   </eSubpackages>
   <eSubpackages name="nodeenvironment" nsURI="http://palladiosimulator.org/BlockchainSystemComponentModel/NodeEnvironment/1.0"
