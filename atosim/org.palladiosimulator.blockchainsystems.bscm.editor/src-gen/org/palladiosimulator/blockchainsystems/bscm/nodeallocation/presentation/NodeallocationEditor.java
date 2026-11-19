@@ -766,6 +766,9 @@ public class NodeallocationEditor extends MultiPageEditorPart
 		adapterFactory.addAdapterFactory(new AttackmodelItemProviderAdapterFactory());
 		adapterFactory.addAdapterFactory(new EcoreItemProviderAdapterFactory());
 		adapterFactory.addAdapterFactory(new IdentifierItemProviderAdapterFactory());
+		adapterFactory.addAdapterFactory(new ProbfunctionItemProviderAdapterFactory());
+		adapterFactory.addAdapterFactory(new StoexItemProviderAdapterFactory());
+		adapterFactory.addAdapterFactory(new UnitsItemProviderAdapterFactory());
 		adapterFactory.addAdapterFactory(new PcmItemProviderAdapterFactory());
 		adapterFactory.addAdapterFactory(new CoreItemProviderAdapterFactory());
 		adapterFactory.addAdapterFactory(new EntityItemProviderAdapterFactory());
@@ -786,9 +789,6 @@ public class NodeallocationEditor extends MultiPageEditorPart
 		adapterFactory.addAdapterFactory(new ResourceenvironmentItemProviderAdapterFactory());
 		adapterFactory.addAdapterFactory(new AllocationItemProviderAdapterFactory());
 		adapterFactory.addAdapterFactory(new SubsystemItemProviderAdapterFactory());
-		adapterFactory.addAdapterFactory(new ProbfunctionItemProviderAdapterFactory());
-		adapterFactory.addAdapterFactory(new StoexItemProviderAdapterFactory());
-		adapterFactory.addAdapterFactory(new UnitsItemProviderAdapterFactory());
 		adapterFactory.addAdapterFactory(new ReflectiveItemProviderAdapterFactory());
 
 		// Create the command stack that will notify this editor as commands are executed.

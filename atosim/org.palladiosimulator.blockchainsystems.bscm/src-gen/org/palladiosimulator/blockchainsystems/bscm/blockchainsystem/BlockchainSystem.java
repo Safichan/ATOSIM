@@ -126,7 +126,7 @@ public interface BlockchainSystem extends Entity {
 	 * @return the value of the '<em>Crash Specification</em>' containment reference.
 	 * @see #setCrashSpecification(CrashSpecification)
 	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainsystemPackage#getBlockchainSystem_CrashSpecification()
-	 * @model containment="true"
+	 * @model containment="true" required="true"
 	 * @generated
 	 */
 	CrashSpecification getCrashSpecification();

@@ -480,7 +480,7 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 				"GeographicalRegionsSpecification", null, 1, 1, BlockchainSystem.class, !IS_TRANSIENT, !IS_VOLATILE,
 				IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getBlockchainSystem_CrashSpecification(), this.getCrashSpecification(), null,
-				"CrashSpecification", null, 0, 1, BlockchainSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE,
+				"CrashSpecification", null, 1, 1, BlockchainSystem.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE,
 				IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(blockchainSystemSpecificationEClass, BlockchainSystemSpecification.class,

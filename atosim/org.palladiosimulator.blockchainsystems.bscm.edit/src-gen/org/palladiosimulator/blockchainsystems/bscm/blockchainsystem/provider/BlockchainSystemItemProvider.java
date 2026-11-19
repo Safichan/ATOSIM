@@ -55,6 +55,7 @@ public class BlockchainSystemItemProvider extends EntityItemProvider {
 			addNetworkPropertyDescriptor(object);
 			addTransactionsSpecificationPropertyDescriptor(object);
 			addGeographicalRegionsSpecificationPropertyDescriptor(object);
+			addCrashSpecificationPropertyDescriptor(object);
 		}
 		return itemPropertyDescriptors;
 	}
@@ -107,6 +108,22 @@ public class BlockchainSystemItemProvider extends EntityItemProvider {
 	}
 
 	/**
+	 * This adds a property descriptor for the Crash Specification feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected void addCrashSpecificationPropertyDescriptor(Object object) {
+		itemPropertyDescriptors
+				.add(createItemPropertyDescriptor(((ComposeableAdapterFactory) adapterFactory).getRootAdapterFactory(),
+						getResourceLocator(), getString("_UI_BlockchainSystem_CrashSpecification_feature"),
+						getString("_UI_PropertyDescriptor_description",
+								"_UI_BlockchainSystem_CrashSpecification_feature", "_UI_BlockchainSystem_type"),
+						BlockchainsystemPackage.Literals.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION, true, false, true,
+						null, null, null));
+	}
+
+	/**
 	 * This specifies how to implement {@link #getChildren} and is used to deduce an appropriate feature for an
 	 * {@link org.eclipse.emf.edit.command.AddCommand}, {@link org.eclipse.emf.edit.command.RemoveCommand} or
 	 * {@link org.eclipse.emf.edit.command.MoveCommand} in {@link #createCommand}.
@@ -119,6 +136,7 @@ public class BlockchainSystemItemProvider extends EntityItemProvider {
 		if (childrenFeatures == null) {
 			super.getChildrenFeatures(object);
 			childrenFeatures.add(BlockchainsystemPackage.Literals.BLOCKCHAIN_SYSTEM__SPECIFICATION);
+			childrenFeatures.add(BlockchainsystemPackage.Literals.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION);
 		}
 		return childrenFeatures;
 	}
@@ -207,6 +225,10 @@ public class BlockchainSystemItemProvider extends EntityItemProvider {
 
 		newChildDescriptors.add(createChildParameter(BlockchainsystemPackage.Literals.BLOCKCHAIN_SYSTEM__SPECIFICATION,
 				BlockchainsystemFactory.eINSTANCE.createBlockchainSystemSpecification()));
+
+		newChildDescriptors
+				.add(createChildParameter(BlockchainsystemPackage.Literals.BLOCKCHAIN_SYSTEM__CRASH_SPECIFICATION,
+						BlockchainsystemFactory.eINSTANCE.createCrashSpecification()));
 	}
 
 	/**

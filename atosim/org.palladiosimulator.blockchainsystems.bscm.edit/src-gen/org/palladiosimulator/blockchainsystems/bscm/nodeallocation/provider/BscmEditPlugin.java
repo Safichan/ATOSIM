@@ -49,8 +49,8 @@ public final class BscmEditPlugin extends EMFPlugin {
 	 */
 	public BscmEditPlugin() {
 		super(new ResourceLocator[] { EcoreEditPlugin.INSTANCE, IdentifierEditPlugin.INSTANCE,
-				PalladioComponentModelEditPlugin.INSTANCE, ProbabilityFunctionEditPlugin.INSTANCE,
-				StoexEditPlugin.INSTANCE, UnitsEditPlugin.INSTANCE, });
+				ProbabilityFunctionEditPlugin.INSTANCE, StoexEditPlugin.INSTANCE, UnitsEditPlugin.INSTANCE,
+				PalladioComponentModelEditPlugin.INSTANCE, });
 	}
 
 	/**

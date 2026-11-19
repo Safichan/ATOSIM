@@ -119,6 +119,29 @@ public class BlockchainsystemItemProviderAdapterFactory extends Blockchainsystem
 	}
 
 	/**
+	 * This keeps track of the one adapter used for all {@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification} instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected CrashSpecificationItemProvider crashSpecificationItemProvider;
+
+	/**
+	 * This creates an adapter for a {@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification}.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public Adapter createCrashSpecificationAdapter() {
+		if (crashSpecificationItemProvider == null) {
+			crashSpecificationItemProvider = new CrashSpecificationItemProvider(this);
+		}
+
+		return crashSpecificationItemProvider;
+	}
+
+	/**
 	 * This returns the root adapter factory that contains this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -227,6 +250,8 @@ public class BlockchainsystemItemProviderAdapterFactory extends Blockchainsystem
 			blockchainSystemItemProvider.dispose();
 		if (blockchainSystemSpecificationItemProvider != null)
 			blockchainSystemSpecificationItemProvider.dispose();
+		if (crashSpecificationItemProvider != null)
+			crashSpecificationItemProvider.dispose();
 	}
 
 }
