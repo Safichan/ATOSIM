@@ -26,7 +26,7 @@ public class ATOSIMSimulator {
     
     // Configurations for the attacker
     private static final Path DEFAULT_CSV =
-            Paths.get("run_configurations_selfish.csv");
+            Paths.get("run_configurations_selfish_test.csv");
     
     // Folder for the results
     private static final Path DEFAULT_OUTPUT_DIR =

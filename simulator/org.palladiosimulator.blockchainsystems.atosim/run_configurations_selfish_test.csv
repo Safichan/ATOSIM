@@ -1,0 +1,2 @@
+config_id,system_config_id,validator_count,node_degree,bandwidth,block_creation_interval,max_block_size,attacker_config_id,attack_strategy,attacker_hash_power,tie_breaking_parameter
+1,2,21,6,5.0,445494,4699379,1,selfish,0.3857676334163057,0.20470825083617128
