@@ -12,6 +12,7 @@ import org.palladiosimulator.blockchainsystems.core.blockchain.BlockTypeChangedT
 import org.palladiosimulator.blockchainsystems.core.blockchain.ChainReorganizedTraceEvent;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.TraceEvent;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.TraceEventLogOrigin;
+import org.palladiosimulator.blockchainsystems.core.crashes.events.CrashPlan;
 import org.palladiosimulator.blockchainsystems.core.geography.GeographicalRegions;
 import org.palladiosimulator.blockchainsystems.core.mining.BlockMinedTraceEvent;
 import org.palladiosimulator.blockchainsystems.core.monitoring.abstractions.SimulationMonitor;
@@ -182,6 +183,9 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
     
     private boolean _nodesWereUnavailable = false;
     private long _allNodesOperationalSince = -1L;
+    
+    private CrashPlan _crashPlan;
+    
 
     public ThreesimSimulationMonitor(
             LongestChainExceededMaxLengthCondition maxBlockchainLengthCondition,
@@ -208,6 +212,8 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
         _confirmedBlocks = new BlocksMap(majorityThreshold);
         _staleBlocks = new BlocksMap(majorityThreshold);
         _forkedBlocks = new BlocksMap(majorityThreshold);
+        
+        _crashPlan = blockchainSystem.getCrashPlan();
     }
 
     public ThreesimSimulationMonitorState getFinalState(long finalSystemTime) {
@@ -321,19 +327,19 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
             ChainReorganizedTraceEvent reorgEvent = (ChainReorganizedTraceEvent) event;
             
             boolean duringRecovery = _nodes.stream()
-            		.filter(node -> node.getId().equals(logOrigin.getId()))
-            		.findFirst()
-            		.map(BlockchainSystemNode::isRecovering)
-            		.orElse(false);
+                    .filter(node -> node.getId().equals(logOrigin.getId()))
+                    .findFirst()
+                    .map(BlockchainSystemNode::isRecovering)
+                    .orElse(false);
             
-            		_chainReorganizations.add(new ChainReorganizationOccurrence(
-            				logOrigin.getId(), 
-            				reorgEvent, 
-							isAttackerCaused(reorgEvent), 
-							duringRecovery));
-            		
-            		if(!duringRecovery) _lastReorgTimestamp = reorgEvent.getOccurrenceTime();
+            _chainReorganizations.add(new ChainReorganizationOccurrence(
+            		logOrigin.getId(), 
+            		reorgEvent, 
+            		isAttackerCaused(reorgEvent), 
+            		duringRecovery));
             
+            if(!duringRecovery) _lastReorgTimestamp = reorgEvent.getOccurrenceTime();
+
         } else if (AttackPhaseTransitionTraceEvent.EVENT_TYPE.equals(event.getEventType())) {
             AttackPhaseTransitionTraceEvent e = (AttackPhaseTransitionTraceEvent) event;
             if (_simulationParameters.getAttackType() == AttackType.LEAD_STUBBORN_MINING
@@ -359,13 +365,6 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
             }
         }
     }
-    
-    private List<ChainReorganizationOccurrence> getNonRecoveryChainReorganizations() {
-    	return _chainReorganizations
-    			.stream()
-    			.filter(occurrance -> !occurrance.isDuringRecovery())
-    			.toList();
-    	}
 
     @Override
     public boolean shouldTerminate() {
@@ -375,12 +374,43 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
         // the wait by advancing _lastReorgTimestamp, so this checks the gap since the MOST
         // RECENT one, not the first. Falls through to the existing maxAllowedBlockchainLength
         // check below as a backstop if quiescence is never reached.
-        if (!_chainReorganizations.isEmpty()) {
+    	
+    	boolean allNodesOperational = _nodes.stream()
+    	        .noneMatch(node -> node.isRecovering() || node.isCrashed());
+    	
+    	if (!allNodesOperational) {
+            _nodesWereUnavailable = true;
+            _allNodesOperationalSince = -1L;
+        } else if (_nodesWereUnavailable && _allNodesOperationalSince < 0) {
+            _allNodesOperationalSince = _lastEventTimestamp;
+        }
+    	
+    	if (_crashPlan != null) {
+    	    boolean crashPending = _lastEventTimestamp < _crashPlan.getCrashTime();
+
+    	    if (crashPending || !allNodesOperational) {
+    	        return false;
+    	    }
+    	}
+
+    	
+        if (allNodesOperational && !getNonRecoveryChainReorganizations().isEmpty()) {
             long quiescenceWindow = (long) (0.5 * _simulationParameters.getBlockInterval());
-            if (_lastEventTimestamp - _lastReorgTimestamp >= quiescenceWindow) {
+            long observationStart = _lastReorgTimestamp;
+
+            if (_allNodesOperationalSince >= 0) {
+                observationStart = Math.max(
+                        observationStart,
+                        _allNodesOperationalSince
+                );
+            }
+            
+            if (_lastEventTimestamp - observationStart >= quiescenceWindow) {
                 _quiescenceReached = true;
                 return true;
             }
+
+            
         }
 
         boolean maxExceeded = _maxBlockchainLengthCondition.hasLengthExceeded();
@@ -403,16 +433,18 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
             }
         }
 
-        if (maxExceeded && !_chainReorganizations.isEmpty()) {
+        if (maxExceeded && !getNonRecoveryChainReorganizations().isEmpty()) {
             // Cap reached before quiescence was ever achieved (reorgs kept resetting the wait):
             // treat identically to "no reorg ever occurred" (D_r=0, loss) per the simplified
             // termination rule, rather than reporting a still-contested, possibly-transient
             // result as final.
-            _chainReorganizations.clear();
+        	// Only non recovery reorgs are removed
+        	_chainReorganizations.removeIf(occurrence -> !occurrence.isDuringRecovery());
         }
 
         return maxExceeded;
     }
+ 
 
     // Colleague review item 6 (extended per the topology/forwarding/timing investigation):
     // records this node's first appearance of this block (any classification), and records a
@@ -595,6 +627,13 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
     private boolean isAttacker(String originId) {
         return originId != null && _simulationParameters.getAttackerNodeIds().contains(originId);
     }
+    
+    private List<ChainReorganizationOccurrence> getNonRecoveryChainReorganizations() {
+    	return _chainReorganizations
+    			.stream()
+    			.filter(occurrance -> !occurrance.isDuringRecovery())
+    			.toList();
+    }
 
     // Branch-lineage attribution: a reorg counts as attacker-caused when the winning branch's
     // earliest block past the common ancestor (i.e. where it first diverges from the shared
@@ -733,7 +772,7 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
     // natural (and only available) per-contest resolution instant.
     public List<Long> getForkDurations() {
         Map<String, ChainReorganizationOccurrence> earliestByTipHash = new LinkedHashMap<>();
-        for (ChainReorganizationOccurrence occurrence : _chainReorganizations) {
+        for (ChainReorganizationOccurrence occurrence : getNonRecoveryChainReorganizations()) {
             String tipHash = occurrence.getEvent().getNewCanonicalTip().getHash();
             ChainReorganizationOccurrence existing = earliestByTipHash.get(tipHash);
             if (existing == null
@@ -779,7 +818,7 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
         if (!_quiescenceReached) return EpisodeStatus.UNRESOLVED;
 
         Set<String> displacingAttackerBlockHashes = new HashSet<>();
-        for (ChainReorganizationOccurrence occurrence : _chainReorganizations) {
+        for (ChainReorganizationOccurrence occurrence : getNonRecoveryChainReorganizations()) {
             for (ChainReorganizedTraceEvent.ChainBlock chainBlock : occurrence.getEvent().getReplacingChainBlocks()) {
                 if (isAttacker(chainBlock.getBlock().getOriginId())) {
                     displacingAttackerBlockHashes.add(chainBlock.getBlock().getHash());
@@ -825,7 +864,7 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
         if (getEpisodeStatus() != EpisodeStatus.SUCCESS) return null;
 
         Map<String, ChainReorganizationOccurrence> hashToEarliestOccurrence = new LinkedHashMap<>();
-        for (ChainReorganizationOccurrence occurrence : _chainReorganizations) {
+        for (ChainReorganizationOccurrence occurrence : getNonRecoveryChainReorganizations()) {
             for (ChainReorganizedTraceEvent.ChainBlock chainBlock : occurrence.getEvent().getReplacingChainBlocks()) {
                 if (isAttacker(chainBlock.getBlock().getOriginId())) {
                     hashToEarliestOccurrence.putIfAbsent(chainBlock.getBlock().getHash(), occurrence);

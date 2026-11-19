@@ -2,10 +2,12 @@ package org.palladiosimulator.blockchainsystems.threesim.creation;
 
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem;
+import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification;
 import org.palladiosimulator.blockchainsystems.bscm.p2pnetwork.NetworkTopology;
 import org.palladiosimulator.blockchainsystems.core.block.BlockFactoryImpl;
 import org.palladiosimulator.blockchainsystems.core.block.abstractions.BlockFactory;
 import org.palladiosimulator.blockchainsystems.core.blockchain.BlockchainFactoryImpl;
+import org.palladiosimulator.blockchainsystems.core.crashes.events.CrashPlan;
 import org.palladiosimulator.blockchainsystems.core.geography.GeographicalRegionsResolver;
 import org.palladiosimulator.blockchainsystems.core.orphanblockpool.OrphanBlockPoolFactoryImpl;
 import org.palladiosimulator.blockchainsystems.core.propagation.block.BlockPropagationStrategyFactoryImpl;
@@ -33,12 +35,12 @@ import org.palladiosimulator.blockchainsystems.threesim.simulation.TransactionGe
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
 public abstract class ThreesimBlockchainSystemFactory {
@@ -127,15 +129,52 @@ public abstract class ThreesimBlockchainSystemFactory {
         BlockchainSystemNodeFactory nodeFactory = createBlockchainSystemNodeFactory(
                 nodeAllocationResolver, resourcePowerCalculator, blockFactory,
                 geographicalRegionsResolver, effectiveParameters, rootSeed);
+        
+		CrashSpecification crashSpec = designBlockchainSystem.getCrashSpecification();
+		CrashPlan crashPlan = createCrashPlan(crashSpec, params, networkCreationResult, runtimeAttackerNodeIds, rootSeed);
 
         org.palladiosimulator.blockchainsystems.core.system.BlockchainSystem system =
                 createBlockchainSystemInstance(networkCreationResult.getCreatedNetwork(), blockFactory,
                         nodeFactory, geographicalRegionsResolver,
                         designBlockchainSystem.getSpecification().getBlockReward(),
                         effectiveParameters.getTransactionGenerationMode(), rootSeed,
-                        getNodeIdToIndexMapping(networkCreationResult));
+                        getNodeIdToIndexMapping(networkCreationResult), crashPlan);
 
         return new BlockchainSystemWithParameters(system, effectiveParameters, topologyDeterminismInfo);
+    }
+    
+    private CrashPlan createCrashPlan(CrashSpecification crashSpec, ThreesimSimulationParameters params, 
+    		P2PNetworkCreationResult networkCreationResult, Set<String> runtimeAttackerNodeIds, long rootSeed) {
+    	
+    	if (crashSpec != null && crashSpec.isCrashEnabled()) {
+        	double nodeFraction = crashSpec.getUnavailableNodeFraction();
+            long crashDuration = (long) (crashSpec.getCrashDuration() * params.getBlockInterval());
+            long crashTime = (long) (params.getBlockInterval() * 5);
+            
+            List<String> listOfHonestNodeIds = networkCreationResult.getCreatedNetwork().getNodes()
+            		.stream()
+            		.map(NodeP2PNetworkInterface::getEndpointId)
+            		.filter(runtimeNodeId -> {
+            			return !runtimeAttackerNodeIds.contains(runtimeNodeId);
+            		})
+            		.sorted()
+            		.collect(Collectors.toList());
+            
+            int numberOfCrashingNodes = (int) Math.round(listOfHonestNodeIds.size() * nodeFraction);
+            
+            RandomGenerator randomGenerator = DeterministicSeeds.seededGenerator(rootSeed, "crashNodeSelection");
+            
+            Set<String> crashingNodes = new LinkedHashSet<>();
+
+            for (int i = 0; i < numberOfCrashingNodes; i++) {
+                int randomIndex = randomGenerator.nextInt(listOfHonestNodeIds.size());
+                crashingNodes.add(listOfHonestNodeIds.remove(randomIndex));
+            }
+            
+            return new CrashPlan(crashingNodes, crashTime, crashDuration);
+        } else {
+        	return null;
+        }
     }
 
     // Builds the verification-facing determinism metadata (item 1a) -- attacker indices and
@@ -194,7 +233,7 @@ public abstract class ThreesimBlockchainSystemFactory {
             P2PNetwork network, BlockFactory blockFactory, BlockchainSystemNodeFactory nodeFactory,
             GeographicalRegionsResolver geographicalRegionsResolver, double blockReward,
             TransactionGenerationMode transactionGenerationMode, long rootSeed,
-            Map<String, Integer> nodeIdToIndex) {
+            Map<String, Integer> nodeIdToIndex, CrashPlan crashPlan) {
 
         String id = DeterministicSeeds.randomHexId(DeterministicSeeds.seededGenerator(rootSeed, "systemId"));
         String name = "BlockchainSystem_" + id.substring(0, 8);
@@ -225,7 +264,7 @@ public abstract class ThreesimBlockchainSystemFactory {
 
         return new org.palladiosimulator.blockchainsystems.core.system.BlockchainSystem(
                 id, name, network, geoRegions, nodes, txSubmissionProcess, blockReward,
-                DeterministicSeeds.seededGenerator(rootSeed, "recipientSelection"));
+                DeterministicSeeds.seededGenerator(rootSeed, "recipientSelection"), crashPlan);
     }
 
     private org.palladiosimulator.blockchainsystems.threesim.behavior.ThreesimTransactionSubmissionProcess

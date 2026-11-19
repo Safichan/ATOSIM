@@ -2,6 +2,8 @@ package org.palladiosimulator.blockchainsystems.core.system;
 
 import org.palladiosimulator.blockchainsystems.core.common.BlockchainSimulationObject;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Event;
+import org.palladiosimulator.blockchainsystems.core.crashes.events.CrashEvent;
+import org.palladiosimulator.blockchainsystems.core.crashes.events.CrashPlan;
 import org.palladiosimulator.blockchainsystems.core.geography.GeographicalRegions;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.P2PNetwork;
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TransactionSubmissionProcess;
@@ -9,6 +11,7 @@ import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.Tra
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.random.RandomGenerator;
 
 public class BlockchainSystem extends BlockchainSimulationObject {
@@ -31,6 +34,8 @@ public class BlockchainSystem extends BlockchainSimulationObject {
     // tag) rather than a per-node-scoped generator, since this is a single routing decision, not a
     // per-node draw.
     private final RandomGenerator _recipientSelectionGenerator;
+    
+    private final CrashPlan _crashPlan;
 
     public BlockchainSystem(
             String id,
@@ -40,7 +45,8 @@ public class BlockchainSystem extends BlockchainSimulationObject {
             LinkedHashSet<BlockchainSystemNode> nodes,
             TransactionSubmissionProcess transactionSubmissionProcess,
             double blockReward,
-            RandomGenerator recipientSelectionGenerator
+            RandomGenerator recipientSelectionGenerator,
+            CrashPlan crashPlan
     ) {
         super(id, name);
         _network = network;
@@ -49,6 +55,7 @@ public class BlockchainSystem extends BlockchainSimulationObject {
         _transactionSubmissionProcess = transactionSubmissionProcess;
         _blockReward = blockReward;
         _recipientSelectionGenerator = recipientSelectionGenerator;
+        _crashPlan = crashPlan;
     }
 
     @Override
@@ -58,6 +65,17 @@ public class BlockchainSystem extends BlockchainSimulationObject {
         for (BlockchainSystemNode node : _nodes) {
             node.initialize(getSimulationContext());
             _transactionSubmissionProcess.addOnTransactionSubmittedCallbackSubscriber(node);
+        }
+        
+        if(_crashPlan != null) {
+        	Set<String> crashingNodeIds = _crashPlan.getCrashingNodeIds();
+        	for (BlockchainSystemNode node : _nodes) {
+                if (crashingNodeIds.contains(node.getId())) {
+                    CrashEvent crashEvent = 
+                    		new CrashEvent(node, _crashPlan.getCrashTime(), _crashPlan.getCrashDuration());
+                    getSimulationContext().getEventCoordinator().raiseEvent(crashEvent);
+                }
+            }
         }
 
         _transactionSubmissionProcess.setOnSelectRecipientNodeIdCallback(this::selectRecipientNodeId);
@@ -86,4 +104,8 @@ public class BlockchainSystem extends BlockchainSimulationObject {
     public LinkedHashSet<BlockchainSystemNode> getNodes() { return _nodes; }
     public TransactionSubmissionProcess getTransactionSubmissionProcess() { return _transactionSubmissionProcess; }
     public double getBlockReward() { return _blockReward; }
+
+	public CrashPlan getCrashPlan() {
+		return _crashPlan;
+	}
 }

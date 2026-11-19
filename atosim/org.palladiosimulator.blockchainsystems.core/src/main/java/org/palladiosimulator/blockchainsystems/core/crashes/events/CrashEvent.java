@@ -11,7 +11,7 @@ public class CrashEvent implements Event{
 	private final EventDispatchable target;
 	private final long crashDuration;
 	
-	public CrashEvent(long occurrenceTime, EventDispatchable target, long crashDuration) {
+	public CrashEvent(EventDispatchable target, long occurrenceTime, long crashDuration) {
 		this.target = target;
 		this.occurrenceTime = occurrenceTime;
 		this.crashDuration = crashDuration;
