@@ -18,7 +18,7 @@ public class MessageDispatcher {
 	private BooleanSupplier _crashStateSupplier = () -> false;
 	
 	public MessageDispatcher(NodeP2PNetworkInterface networkInterface) {
-        _networkInterface = networkInterface;
+        setNetworkInterface(networkInterface);
     }
 	
 	public void onMessageReceived(Message message, P2PNetworkEndpoint sender) {

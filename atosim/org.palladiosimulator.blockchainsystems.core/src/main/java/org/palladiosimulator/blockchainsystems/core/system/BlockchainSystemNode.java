@@ -236,8 +236,4 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     public GeographicalRegion getGeographicalRegion() { return _geographicalRegion; }
     public Blockchain getBlockchain() { return _blockchain; }
     
-    /*public void setRecoveryStrategy(RecoveryStrategy recoveryStrategy) {
-        _recoveryStrategy = Objects.requireNonNull(recoveryStrategy); 
-    }*/
-    
 }
