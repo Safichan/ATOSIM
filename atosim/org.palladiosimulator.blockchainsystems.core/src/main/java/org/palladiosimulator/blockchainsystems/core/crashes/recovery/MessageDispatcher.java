@@ -84,18 +84,18 @@ public class MessageDispatcher {
 	}
 
 
-	public void setNetworkInterface(NodeP2PNetworkInterface networkInterface) {
+	/*public void setNetworkInterface(NodeP2PNetworkInterface networkInterface) {
 	    if (_networkInterface != null) removeCurrentNetworkInterface();
 	    setNewNetworkInterface(networkInterface);
-	}
+	}*/
 	
-	private void removeCurrentNetworkInterface() {
+	/*private void removeCurrentNetworkInterface() {
 	    _networkInterface.setOnMessageReceivedCallback(null);
 	    _networkInterface.setOnMessageDroppedCallback(null);
 	    _networkInterface = null;
-	}
+	}*/
 	
-	private void setNewNetworkInterface(NodeP2PNetworkInterface networkInterface) {
+	private void setNetworkInterface(NodeP2PNetworkInterface networkInterface) {
 	    _networkInterface = networkInterface;
 	    _networkInterface.setOnMessageReceivedCallback(
 	            (message, sender) -> this.onMessageReceived(message, sender));

@@ -8,6 +8,8 @@ import org.palladiosimulator.blockchainsystems.core.common.abstractions.Event;
 import org.palladiosimulator.blockchainsystems.core.common.abstractions.Taggable;
 import org.palladiosimulator.blockchainsystems.core.crashes.events.CrashEvent;
 import org.palladiosimulator.blockchainsystems.core.crashes.events.RecoveryEvent;
+import org.palladiosimulator.blockchainsystems.core.crashes.events.RecoveryTimeoutEvent;
+import org.palladiosimulator.blockchainsystems.core.crashes.events.RecoveryTimeoutType;
 import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.CrashMode;
 import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.NodeMode;
 import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.NormalMode;
@@ -122,6 +124,9 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         
         _recoveryStrategy = new BlocksFirstRecovery(_networkInterface, _context, _blockPropagationStrategy);
         _recoveryStrategy.setOnRecoveryCompletedCallback(() -> finishRecovery());
+        _recoveryStrategy.setOnRecoveryTimeoutRequestedCallback(
+                (timeoutType, attemptId) -> scheduleRecoveryTimeout(timeoutType, attemptId)
+        );
         
         _messageDispatcher = new MessageDispatcher(_networkInterface);
         _messageDispatcher.setBlockPropagationStrategy(_blockPropagationStrategy);
@@ -187,9 +192,33 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
             RecoveryEvent recoveryEvent = new RecoveryEvent(recoveryTime, this);
             getSimulationContext().getEventCoordinator().raiseEvent(recoveryEvent);
             
-        } else if(RecoveryEvent.EVENT_TYPE.equals(event.getEventType())) {
+        } else if (RecoveryEvent.EVENT_TYPE.equals(event.getEventType())) {
         	if(!(_currentMode instanceof CrashMode)) return;
     		recover();
+    		
+    	} else if (RecoveryTimeoutEvent.EVENT_TYPE.equals(event.getEventType())) {
+    		if(!(_currentMode instanceof RecoveryMode)) return;
+    		RecoveryTimeoutEvent recoveryTimeoutEvent;
+    		if(event instanceof RecoveryTimeoutEvent) {
+    			recoveryTimeoutEvent = (RecoveryTimeoutEvent) event;
+    			
+    			switch(recoveryTimeoutEvent.getTimeoutType()) {
+	    			case RecoveryTimeoutType.SYNC_RESPONSE -> {
+	    				_recoveryStrategy.handleSyncResponseTimeout(
+	    				        recoveryTimeoutEvent.getAttemptId()
+	    				);
+	    			}
+	    			case RecoveryTimeoutType.BLOCK_RESPONSE -> {
+	    				
+	    			}
+    			}
+            	
+            } else {
+            	System.err.println("Not a recovery timeout event was passed in.");
+            	return;
+            }
+    		
+    		
     	}
     }
     
@@ -210,6 +239,14 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     	_currentMode = new NormalMode(_behavior);
     	_miningProcess.setIsMiningEnabled(true);
     	_miningProcess.restartMining();
+    }
+    
+    private void scheduleRecoveryTimeout(RecoveryTimeoutType timeoutType, long attemptId) {
+    	long timeoutDuration = 445494L;
+    	long currentTime = getSimulationContext().getSystemClock().getCurrentTime();
+    	RecoveryTimeoutEvent event = 
+    			new RecoveryTimeoutEvent(this, currentTime + timeoutDuration, timeoutType, attemptId, null);
+    	getSimulationContext().getEventCoordinator().raiseEvent(event);
     }
     
     public boolean isRecovering() {
