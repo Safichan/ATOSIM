@@ -17,6 +17,7 @@ import org.palladiosimulator.blockchainsystems.core.crashes.nodemodes.RecoveryMo
 import org.palladiosimulator.blockchainsystems.core.crashes.recovery.BlocksFirstRecovery;
 import org.palladiosimulator.blockchainsystems.core.crashes.recovery.MessageDispatcher;
 import org.palladiosimulator.blockchainsystems.core.crashes.recovery.RecoveryStrategy;
+import org.palladiosimulator.blockchainsystems.core.crashes.recovery.RecoveryTimeoutRequest;
 import org.palladiosimulator.blockchainsystems.core.geography.GeographicalRegion;
 import org.palladiosimulator.blockchainsystems.core.propagation.PropagationStrategy;
 import org.palladiosimulator.blockchainsystems.core.system.abstractions.Blockchain;
@@ -31,6 +32,7 @@ import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.Tra
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TrxMemPool;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class BlockchainSystemNode extends BlockchainSimulationObject implements Taggable, TransactionSubmittedCallbackSubscriber {
 
@@ -125,7 +127,7 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         _recoveryStrategy = new BlocksFirstRecovery(_networkInterface, _context, _blockPropagationStrategy);
         _recoveryStrategy.setOnRecoveryCompletedCallback(() -> finishRecovery());
         _recoveryStrategy.setOnRecoveryTimeoutRequestedCallback(
-                (timeoutType, attemptId) -> scheduleRecoveryTimeout(timeoutType, attemptId)
+                (request) -> scheduleRecoveryTimeout(request)
         );
         
         _messageDispatcher = new MessageDispatcher(_networkInterface);
@@ -209,7 +211,10 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
 	    				);
 	    			}
 	    			case RecoveryTimeoutType.BLOCK_RESPONSE -> {
-	    				
+	    				_recoveryStrategy.handleBlockResponseTimeout(
+	    				        recoveryTimeoutEvent.getBlockHash(),
+	    				        recoveryTimeoutEvent.getAttemptId()
+	    				);
 	    			}
     			}
             	
@@ -241,11 +246,16 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     	_miningProcess.restartMining();
     }
     
-    private void scheduleRecoveryTimeout(RecoveryTimeoutType timeoutType, long attemptId) {
+    private void scheduleRecoveryTimeout(RecoveryTimeoutRequest request) {
     	long timeoutDuration = 445494L;
     	long currentTime = getSimulationContext().getSystemClock().getCurrentTime();
-    	RecoveryTimeoutEvent event = 
-    			new RecoveryTimeoutEvent(this, currentTime + timeoutDuration, timeoutType, attemptId, null);
+    	RecoveryTimeoutEvent event = new RecoveryTimeoutEvent(
+                this,
+                currentTime + timeoutDuration,
+                request.getTimeoutType(),
+                request.getAttemptId(),
+                request.getBlockHash()
+        );
     	getSimulationContext().getEventCoordinator().raiseEvent(event);
     }
     

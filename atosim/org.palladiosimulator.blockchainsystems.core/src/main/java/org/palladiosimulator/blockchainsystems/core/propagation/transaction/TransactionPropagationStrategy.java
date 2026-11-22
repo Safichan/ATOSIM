@@ -113,4 +113,9 @@ public class TransactionPropagationStrategy extends GossipPropagationStrategy<Tr
 		// TODO Auto-generated method stub
 		
 	}
+	@Override
+	public void retryElement(String elementId, P2PNetworkEndpoint peer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

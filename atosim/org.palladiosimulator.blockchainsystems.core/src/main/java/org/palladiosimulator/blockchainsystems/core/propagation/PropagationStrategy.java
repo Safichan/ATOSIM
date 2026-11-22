@@ -16,4 +16,5 @@ public interface PropagationStrategy<E extends Propagatable> extends Traceable, 
     void setBlockchainSystemNodeContext(BlockchainSystemNodeContext context);
     void setOnReceivedCallback(Consumer<E> onReceivedCallback);
     void requestElement(String elementId, P2PNetworkEndpoint peer);
+    void retryElement(String elementId, P2PNetworkEndpoint peer);
 }

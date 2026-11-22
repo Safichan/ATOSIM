@@ -176,4 +176,10 @@ public class RaceAwareTransactionPropagationStrategy extends GossipPropagationSt
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void retryElement(String elementId, P2PNetworkEndpoint peer) {
+		// TODO Auto-generated method stub
+		
+	}
 }

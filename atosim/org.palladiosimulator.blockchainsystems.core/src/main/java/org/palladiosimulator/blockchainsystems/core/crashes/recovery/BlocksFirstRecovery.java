@@ -3,11 +3,14 @@ package org.palladiosimulator.blockchainsystems.core.crashes.recovery;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.palladiosimulator.blockchainsystems.core.block.abstractions.Block;
 import org.palladiosimulator.blockchainsystems.core.crashes.events.RecoveryTimeoutType;
@@ -34,18 +37,20 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	// A maximum of 128 requests can be active at the same time
 	private Queue<String> pendingRequestQueue = new ArrayDeque<>();
 	// Stores all block hashes that await a response from the sync peer
-	private List<String> awaitingResponses = new ArrayList<>();
+	private Map<String, PendingBlockRequest> pendingBlockRequests = new HashMap<>();
 	// All block hashes that have to be validated
 	private Set<String> awaitingValidations = new HashSet<>();
 	
 	private Set<P2PNetworkEndpoint> attemptedPeers = new HashSet<>();
 	
+	
 	private P2PNetworkEndpoint syncPeer;
 	private Runnable onRecoveryCompletedCallback;
 	private long _recoveryGeneration = 0;
 	private long _syncAttemptId = 0;
+	private long _blockAttemptId = 0;
 	
-	private BiConsumer<RecoveryTimeoutType, Long> onRecoveryTimeoutRequestedCallback;
+	private Consumer<RecoveryTimeoutRequest> onRecoveryTimeoutRequestedCallback;
 	
 	private boolean waitingForSyncResponse = false;
 	
@@ -62,10 +67,7 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
     	
     	_recoveryGeneration++;
     	    	
-    	pendingRequestQueue.clear();
-    	awaitingResponses.clear();
-    	awaitingValidations.clear();
-    	attemptedPeers.clear();
+    	cleanUp();
     	
     	syncPeer = selectSyncPeer();
 
@@ -74,6 +76,14 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
             return;
         }
         sendSyncRequest(syncPeer); 
+    }
+    
+    private void cleanUp() {	
+    	pendingRequestQueue.clear();
+    	pendingBlockRequests.clear();
+    	awaitingValidations.clear();
+    	attemptedPeers.clear();
+    	waitingForSyncResponse = false;
     }
     
     private void sendSyncRequest(P2PNetworkEndpoint syncPeer) {
@@ -85,8 +95,8 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
         attemptedPeers.add(syncPeer); 
         
         onRecoveryTimeoutRequestedCallback.accept(
-        		RecoveryTimeoutType.SYNC_RESPONSE,
-        	    _syncAttemptId
+        		new RecoveryTimeoutRequest(RecoveryTimeoutType.SYNC_RESPONSE,
+        	    _syncAttemptId, null)
         );
         _networkInterface.send(syncRequest, syncPeer); 
         
@@ -254,14 +264,14 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 		
 		waitingForSyncResponse = false;
 		
-		List<String> missingBlockHashes = response.getMissingBlockHashes(); 		
+		List<String> missingBlockHashes = response.getMissingBlockHashes(); 
 		
 		// Add all block hashes to the queue
 	    for (String hash : missingBlockHashes) {
 
 	        if (!_context.getBlockchain().hasBlockWithHash(hash)
 	                && !pendingRequestQueue.contains(hash)
-	                && !awaitingResponses.contains(hash)
+	                && !pendingBlockRequests.containsKey(hash)
 	                && !awaitingValidations.contains(hash)) {
 
 	            pendingRequestQueue.add(hash);
@@ -273,7 +283,7 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	    // Stores that hash in awaiting responses
 	    int availableSlots = Math.max(
 	            0,
-	            MAX_NUMBER_OF_REQUESTS - awaitingResponses.size()
+	            MAX_NUMBER_OF_REQUESTS - pendingBlockRequests.size()
 	    );
 	    int numberOfRequests = Math.min(
 	            availableSlots,
@@ -281,9 +291,10 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	    );
 	    for (int i = 0; i < numberOfRequests; i++) {
 	        String hash = pendingRequestQueue.poll();
-	        _blockPropagationStrategy.requestElement(hash, sender);
-
-	        awaitingResponses.add(hash);
+	        if (hash == null) {
+	            break;
+	        }
+	        requestBlock(hash, sender, false);
 	    }
 	    
 	    // If the sync peer's response is empty and checkSyncRoundCompleted() returns true
@@ -292,6 +303,12 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	    if (missingBlockHashes.isEmpty() && checkSyncRoundCompleted()) {
 	    	onRecoveryCompletedCallback.run();
 	    } else if (checkSyncRoundCompleted()) {
+	    	System.out.println(
+	    		    "NEXT SYNC BATCH | missing=" + missingBlockHashes.size()
+	    		    + " | pending=" + pendingRequestQueue.size()
+	    		    + " | active=" + pendingBlockRequests.size()
+	    		    + " | validating=" + awaitingValidations.size()
+	    		);
 	        requestNextSyncBatch();
 	    }
 		
@@ -300,7 +317,27 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	private boolean checkSyncRoundCompleted() {
 		return pendingRequestQueue.isEmpty() 
 				&& awaitingValidations.isEmpty() 
-				&& awaitingResponses.isEmpty();
+				&& pendingBlockRequests.isEmpty();
+	}
+	
+	private void requestBlock(String blockHash, P2PNetworkEndpoint peer, boolean retry) {
+		if (blockHash == null) {
+		    new Exception("NULL BLOCK HASH | retry=" + retry)
+		        .printStackTrace();
+		    return;
+		}
+		_blockAttemptId++;
+		PendingBlockRequest pendingRequest = new PendingBlockRequest(_blockAttemptId, peer);
+		pendingBlockRequests.put(blockHash, pendingRequest);
+		
+		RecoveryTimeoutRequest request = new RecoveryTimeoutRequest(RecoveryTimeoutType.BLOCK_RESPONSE, _blockAttemptId, blockHash);
+		onRecoveryTimeoutRequestedCallback.accept(request);
+		
+		if (retry) {
+	        _blockPropagationStrategy.retryElement(blockHash, peer);
+	    } else {
+	        _blockPropagationStrategy.requestElement(blockHash, peer);
+	    }
 	}
 	
 	@Override
@@ -325,10 +362,6 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	    }
 	    
 	    sendSyncRequest(syncPeer);
-	    
-	    /*System.out.println("Node=" + _networkInterface.getEndpointId()
-        + " | SYNC_RESPONSE timeout: attemptId=" + attemptId
-        + " | Peer=" + (syncPeer != null ? syncPeer.getEndpointId() : "null"));*/
 	}
 	
 	
@@ -354,28 +387,20 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 
 	@Override
 	public void onBlockReceived(String blockHash) {
-		if (awaitingResponses.contains(blockHash)) {
-	        awaitingResponses.remove(blockHash);
-	        awaitingValidations.add(blockHash);
+		if (pendingBlockRequests.remove(blockHash) != null) {
+		    awaitingValidations.add(blockHash);
 
 	        if (!pendingRequestQueue.isEmpty() && syncPeer != null) {
 
 	            String hash = pendingRequestQueue.poll();
 
-	            _blockPropagationStrategy.requestElement(hash, syncPeer);
-	            awaitingResponses.add(hash);
+	            requestBlock(hash, syncPeer, false);
 	        }
 	    }
 	}
 
 	@Override
 	public void onBlockValidated(String blockHash) {
-		System.out.println(
-			    "Node=" + _networkInterface.getEndpointId()
-			    + " | pending=" + pendingRequestQueue.size()
-			    + " | awaitingResponses=" + awaitingResponses.size()
-			    + " | awaitingValidations=" + awaitingValidations.size()
-			);
 		boolean blocksRemoved = awaitingValidations.removeIf(
 	        hash -> _context.getBlockchain().hasBlockWithHash(hash)
 	    );
@@ -391,8 +416,34 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 		
 	}
 	
-	public void setOnRecoveryTimeoutRequestedCallback(BiConsumer<RecoveryTimeoutType, Long> callback) {
-
+	public void setOnRecoveryTimeoutRequestedCallback(Consumer<RecoveryTimeoutRequest> callback) {
 	    this.onRecoveryTimeoutRequestedCallback = callback;
+	}
+
+
+	@Override
+	public void handleBlockResponseTimeout(String blockHash, long attemptId) {
+		PendingBlockRequest request = pendingBlockRequests.get(blockHash);
+
+	    if (request == null) return;
+
+	    if (request.getAttemptId() != attemptId) return;
+	    
+	    /*System.out.println(
+	    	    "BLOCK RETRY | hash=" + blockHash
+	    	    + " | attempt=" + attemptId
+	    	);*/
+	    
+	    P2PNetworkEndpoint retryPeer = selectBlockRetryPeer(request.getPeer());
+
+	    requestBlock(blockHash, retryPeer, true);
+	}
+		
+	
+	private P2PNetworkEndpoint selectBlockRetryPeer(P2PNetworkEndpoint previousPeer) {
+	    return _networkInterface.getNeighbors().stream()
+	            .filter(peer -> !peer.equals(previousPeer))
+	            .findAny()
+	            .orElse(previousPeer);
 	}
 }
