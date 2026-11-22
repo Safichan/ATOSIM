@@ -303,13 +303,24 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	    if (missingBlockHashes.isEmpty() && checkSyncRoundCompleted()) {
 	    	onRecoveryCompletedCallback.run();
 	    } else if (checkSyncRoundCompleted()) {
-	    	System.out.println(
-	    		    "NEXT SYNC BATCH | missing=" + missingBlockHashes.size()
-	    		    + " | pending=" + pendingRequestQueue.size()
-	    		    + " | active=" + pendingBlockRequests.size()
-	    		    + " | validating=" + awaitingValidations.size()
-	    		);
-	        requestNextSyncBatch();
+	    	boolean allBlocksAlreadyKnown = missingBlockHashes.stream()
+	    	        .allMatch(hash ->
+	    	            _context.getBlockchain().hasBlockWithHash(hash)
+	    	        );
+    	    if (allBlocksAlreadyKnown) {
+    	    	System.out.println(
+    	    		    "RECOVERY COMPLETED | node="
+    	    		    + _networkInterface.getEndpointId()
+    	    		    + " | localTip=" + _context.getBlockchain()
+    	    		    .getPreferredTipOfLongestChains()
+    	    		    .getHash()
+    	    		    + " | peer=" + syncPeer
+    	    		    + " | reportedHash=" + missingBlockHashes.get(0)
+    	    		);
+    	        onRecoveryCompletedCallback.run();
+    	    } else {
+    	        requestNextSyncBatch();
+    	    }
 	    }
 		
 	}
@@ -428,11 +439,6 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	    if (request == null) return;
 
 	    if (request.getAttemptId() != attemptId) return;
-	    
-	    /*System.out.println(
-	    	    "BLOCK RETRY | hash=" + blockHash
-	    	    + " | attempt=" + attemptId
-	    	);*/
 	    
 	    P2PNetworkEndpoint retryPeer = selectBlockRetryPeer(request.getPeer());
 

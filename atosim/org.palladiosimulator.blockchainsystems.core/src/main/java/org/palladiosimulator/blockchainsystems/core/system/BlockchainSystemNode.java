@@ -32,7 +32,6 @@ import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.Tra
 import org.palladiosimulator.blockchainsystems.core.transaction.abstractions.TrxMemPool;
 
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class BlockchainSystemNode extends BlockchainSimulationObject implements Taggable, TransactionSubmittedCallbackSubscriber {
 
