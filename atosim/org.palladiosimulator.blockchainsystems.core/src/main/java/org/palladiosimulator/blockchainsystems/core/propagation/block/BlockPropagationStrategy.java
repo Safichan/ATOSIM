@@ -26,11 +26,6 @@ public class BlockPropagationStrategy extends GossipPropagationStrategy<Block> {
     @Override
     public void retryElement(String blockHash, P2PNetworkEndpoint syncPeer) {
     	if (_context.getBlockchain().hasBlockWithHash(blockHash)) return;
-    	
-    	/*System.out.println(
-    		    "GET_DATA RETRY SENT | hash=" + blockHash
-    		    + " | peer=" + syncPeer.getEndpointId()
-    		);*/
 
         _requestedBlockIds.add(blockHash);
         Message message = createGetDataMessage(blockHash);

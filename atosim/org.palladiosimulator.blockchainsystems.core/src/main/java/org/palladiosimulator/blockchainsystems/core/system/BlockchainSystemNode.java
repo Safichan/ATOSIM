@@ -221,8 +221,6 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
             	System.err.println("Not a recovery timeout event was passed in.");
             	return;
             }
-    		
-    		
     	}
     }
     

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -308,15 +307,6 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	    	            _context.getBlockchain().hasBlockWithHash(hash)
 	    	        );
     	    if (allBlocksAlreadyKnown) {
-    	    	System.out.println(
-    	    		    "RECOVERY COMPLETED | node="
-    	    		    + _networkInterface.getEndpointId()
-    	    		    + " | localTip=" + _context.getBlockchain()
-    	    		    .getPreferredTipOfLongestChains()
-    	    		    .getHash()
-    	    		    + " | peer=" + syncPeer
-    	    		    + " | reportedHash=" + missingBlockHashes.get(0)
-    	    		);
     	        onRecoveryCompletedCallback.run();
     	    } else {
     	        requestNextSyncBatch();
@@ -378,7 +368,6 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	
 	@Override
 	public void onP2PMessageReceived(Message message, P2PNetworkEndpoint sender) {
-		
 		switch(message.getContentType()) {
 			case "BLOCK_SYNC_REQUEST" -> {
 				handleSyncRequest(message, sender);
@@ -386,9 +375,7 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 			case "BLOCK_SYNC_RESPONSE" -> {
 				handleSyncResponse(message, sender);
 			}
-		
 		}
-		
 	}
 	
 	@Override

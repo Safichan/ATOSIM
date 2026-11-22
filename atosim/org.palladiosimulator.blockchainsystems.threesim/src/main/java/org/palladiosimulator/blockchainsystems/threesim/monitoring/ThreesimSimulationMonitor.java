@@ -385,16 +385,18 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
             _allNodesOperationalSince = _lastEventTimestamp;
         }
     	
-    	if (_crashPlan != null) {
-    	    boolean crashPending = _lastEventTimestamp < _crashPlan.getCrashTime();
-
-    	    if (crashPending || !allNodesOperational) {
-    	        return false;
-    	    }
+    	// No termination when a node is crashed or still recovering
+    	if (!allNodesOperational) {
+            return false;
+        }
+    
+    	// No termination when there are crash events
+    	if (_crashPlan != null && _lastEventTimestamp < _crashPlan.getCrashTime()) {
+    	    return false;
     	}
 
     	
-        if (allNodesOperational && !getNonRecoveryChainReorganizations().isEmpty()) {
+        if (!getNonRecoveryChainReorganizations().isEmpty()) {
             long quiescenceWindow = (long) (0.5 * _simulationParameters.getBlockInterval());
             long observationStart = _lastReorgTimestamp;
 
