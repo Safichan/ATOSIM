@@ -20,7 +20,6 @@ public class NormalMode implements NodeMode{
 	@Override
 	public void onTransactionReceived(Transaction transaction, BlockchainSystemNodeContext context) {
 		behavior.onTransactionReceived(transaction, context);
-		
 	}
 
 	@Override

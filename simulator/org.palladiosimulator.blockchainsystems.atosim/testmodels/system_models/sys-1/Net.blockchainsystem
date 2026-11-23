@@ -4,4 +4,5 @@
   <Specification id="_6b08cc8093a3404982f000eb2d80c42e" MeanBlockTime="445494.0" NumOfRequiredSecurityConfirmations="2" MaxBlockSize="4699379" BlockReward="6000.0"/>
   <TransactionsSpecification href="Net.transactions#_SHzpAH4EEfCoDKfwb7jA1A"/>
   <GeographicalRegionsSpecification href="Net.geographicalregions#_ujveIH4EEfCoDKfwb7jA1A"/>
+  <CrashSpecification crashEnabled="false" crashDuration="0.0" unavailableNodeFraction="0.0"/>
 </blockchainsystem:BlockchainSystem>

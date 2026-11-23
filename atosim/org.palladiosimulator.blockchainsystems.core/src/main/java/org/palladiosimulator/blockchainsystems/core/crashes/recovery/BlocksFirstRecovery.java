@@ -35,21 +35,27 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	// Stores all block hashes that need to send a request
 	// A maximum of 128 requests can be active at the same time
 	private Queue<String> pendingRequestQueue = new ArrayDeque<>();
-	// Stores all block hashes that await a response from the sync peer
+	// Stores all block requests that await a response from the sync peer
 	private Map<String, PendingBlockRequest> pendingBlockRequests = new HashMap<>();
 	// All block hashes that have to be validated
 	private Set<String> awaitingValidations = new HashSet<>();
-	
+	// Tracks which peers the recovering node has already requested from
 	private Set<P2PNetworkEndpoint> attemptedPeers = new HashSet<>();
 	
-	
 	private P2PNetworkEndpoint syncPeer;
-	private Runnable onRecoveryCompletedCallback;
+	
+	// Identifies different recovery runs of the same node.
+	// Incremented whenever a new recovery starts.
 	private long _recoveryGeneration = 0;
-	private long _syncAttemptId = 0;
-	private long _blockAttemptId = 0;
+	// Identifies the current synchronization request attempt
+	// to ignore outdated synchronization timeouts.
+	private long _syncRequestAttemptId = 0;
+	// Identifies block request attempts
+	// to match timeouts to the corresponding request.
+	private long _blockRequestAttemptId = 0;
 	
 	private Consumer<RecoveryTimeoutRequest> onRecoveryTimeoutRequestedCallback;
+	private Runnable onRecoveryCompletedCallback;
 	
 	private boolean waitingForSyncResponse = false;
 	
@@ -63,13 +69,13 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
     
     @Override
     public void startRecovery() {
-    	
     	_recoveryGeneration++;
     	    	
-    	cleanUp();
+    	clearRecoveryState();
     	
     	syncPeer = selectSyncPeer();
-
+    	
+    	// If node has no neighbor end recovery immediately
         if (syncPeer == null) {
         	onRecoveryCompletedCallback.run();
             return;
@@ -77,118 +83,13 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
         sendSyncRequest(syncPeer); 
     }
     
-    private void cleanUp() {	
+    private void clearRecoveryState() {	
     	pendingRequestQueue.clear();
     	pendingBlockRequests.clear();
     	awaitingValidations.clear();
     	attemptedPeers.clear();
     	waitingForSyncResponse = false;
     }
-    
-    private void sendSyncRequest(P2PNetworkEndpoint syncPeer) {
-    	List<String> blockLocator = createBlockLocator();
-        Message syncRequest = createSyncRequestMessage(blockLocator);
-        
-        _syncAttemptId++;
-        waitingForSyncResponse = true;
-        attemptedPeers.add(syncPeer); 
-        
-        onRecoveryTimeoutRequestedCallback.accept(
-        		new RecoveryTimeoutRequest(RecoveryTimeoutType.SYNC_RESPONSE,
-        	    _syncAttemptId, null)
-        );
-        _networkInterface.send(syncRequest, syncPeer); 
-        
-    }
-    
-    private void requestNextSyncBatch() {
-	    if (syncPeer == null) {
-	        return;
-	    }
-	    sendSyncRequest(syncPeer);
-	}
-    
-    private Message createSyncRequestMessage(List<String> blockLocator) {
-        int messageSize = MESSAGE_HEADER_BYTE_SIZE
-        		+ Long.BYTES
-                + blockLocator.size() * BLOCK_HASH_BYTE_SIZE;
-        
-        BlockSyncRequest request = new BlockSyncRequest(_recoveryGeneration, blockLocator);
-       
-        return new MessageImpl(
-                request,
-                RecoveryMessageTypes.BLOCK_SYNC_REQUEST,
-                messageSize
-        );
-    }
-    
-    private Message createSyncResponseMessage(List<String> missingBlockHashes, long recoveryNumber) {
-	    int messageSize = MESSAGE_HEADER_BYTE_SIZE
-	    		+ Long.BYTES
-	            + missingBlockHashes.size() * BLOCK_HASH_BYTE_SIZE;
-
-	    BlockSyncResponse response = new BlockSyncResponse(recoveryNumber, missingBlockHashes);
-
-		return new MessageImpl(
-					response,
-					RecoveryMessageTypes.BLOCK_SYNC_RESPONSE,
-					messageSize
-		);
-	}
-    
-    private P2PNetworkEndpoint selectSyncPeer() {
-    	P2PNetworkEndpoint syncPeer = _networkInterface.getNeighbors()
-                .stream()
-                .filter(peer -> !attemptedPeers.contains(peer))
-                .findAny()
-                .orElse(null);
-        return syncPeer;
-    }
-    
-    // This method creates a block locator.
-    // The blocks are sorted from highest (tip) to lowest.
-	// The first 10 blocks are included consecutively. After that, the step size doubles. 
-	// The genesis block is always included as the last entry.
-    private List<String> createBlockLocator() {
-    	
-    	List<String> blockLocator = new ArrayList<>();
-        Block currentBlock = _context.getBlockchain().getPreferredTipOfLongestChains();
-        int step = 1;
-
-        while (currentBlock != null) {
-            blockLocator.add(currentBlock.getHash());
-
-            if (blockLocator.size() > 10) {
-                step *= 2;
-            }
-            
-         // Go backwards by 'step' blocks, skipping intermediate hashes.
-         // If the genesis block is reached, add it to block locator
-         // Stop if a predecessor block cannot be found.
-            for (int i = 0; i < step; i++) {
-                String previousHash = currentBlock.getPreviousHash();
-
-                if (previousHash == null) {
-                    String genesisHash = currentBlock.getHash();
-
-                    if (!blockLocator.get(blockLocator.size() - 1).equals(genesisHash)) {
-                        blockLocator.add(genesisHash);
-                    }
-
-                    return blockLocator;
-                }
-
-                currentBlock = _context.getBlockchain().getBlock(previousHash);
-
-                if (currentBlock == null) {
-                    return blockLocator;
-                }
-            }
-        }
-        
-        return blockLocator;
-    }
-   
 	
 	private void handleSyncRequest(Message message, P2PNetworkEndpoint sender) {
 		if (!(message.getContent() instanceof BlockSyncRequest request)) {
@@ -199,7 +100,6 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 		List<String> blockLocator = request.getBlockLocator();
 		long recoveryGeneration = request.getRecoveryGeneration();
 			 		
-		
 	    String commonAncestorHash = "";
 	    Set<String> preferredChainHashes = _context.getBlockchain().getPreferredChainBlockHashes();
 	    
@@ -243,23 +143,18 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	}
 	
 	private void handleSyncResponse(Message message, P2PNetworkEndpoint sender) {
-		
 		if (!(message.getContent() instanceof BlockSyncResponse response)) {
 			System.err.println("Invalid BLOCK_SYNC_RESPONSE content");
 			return;
 		}
-
-		if (response.getRecoveryGeneration() != _recoveryGeneration) {
-			return;
-		}
 		
-		if (!sender.equals(syncPeer)) {
-			return;
-		}
+		if (!waitingForSyncResponse) return;
 		
-		if (!waitingForSyncResponse) {
-		    return;
-		}
+		// Ignore all responses that are not from current recovery
+		if (response.getRecoveryGeneration() != _recoveryGeneration) return;
+		
+		// Ignore all responses that are not from current sync peer
+		if (!sender.equals(syncPeer)) return;
 		
 		waitingForSyncResponse = false;
 		
@@ -267,12 +162,11 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 		
 		// Add all block hashes to the queue
 	    for (String hash : missingBlockHashes) {
-
 	        if (!_context.getBlockchain().hasBlockWithHash(hash)
 	                && !pendingRequestQueue.contains(hash)
 	                && !pendingBlockRequests.containsKey(hash)
 	                && !awaitingValidations.contains(hash)) {
-
+	        	
 	            pendingRequestQueue.add(hash);
 	        }
 	    }
@@ -296,9 +190,9 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	        requestBlock(hash, sender, false);
 	    }
 	    
-	    // If the sync peer's response is empty and checkSyncRoundCompleted() returns true
-	    // -> End the recovery
-	    // Otherwise start a new recovery round
+	    // If the sync peer's response is empty and checkSyncRoundCompleted()
+	    // the recovery is ended directly
+	    // Double check if all blocks are already known before requesting a new batch
 	    if (missingBlockHashes.isEmpty() && checkSyncRoundCompleted()) {
 	    	onRecoveryCompletedCallback.run();
 	    } else if (checkSyncRoundCompleted()) {
@@ -312,7 +206,116 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
     	        requestNextSyncBatch();
     	    }
 	    }
-		
+	}
+	
+	private void sendSyncRequest(P2PNetworkEndpoint syncPeer) {
+    	List<String> blockLocator = createBlockLocator();
+        Message syncRequest = createSyncRequestMessage(blockLocator);
+        
+        _syncRequestAttemptId++;
+        waitingForSyncResponse = true;
+        attemptedPeers.add(syncPeer); 
+        
+        onRecoveryTimeoutRequestedCallback.accept(
+        		new RecoveryTimeoutRequest(RecoveryTimeoutType.SYNC_RESPONSE,
+        	    _syncRequestAttemptId, null)
+        );
+        _networkInterface.send(syncRequest, syncPeer); 
+    }
+    
+    private Message createSyncRequestMessage(List<String> blockLocator) {
+        int messageSize = MESSAGE_HEADER_BYTE_SIZE
+        		+ Long.BYTES
+                + blockLocator.size() * BLOCK_HASH_BYTE_SIZE;
+        
+        BlockSyncRequest request = new BlockSyncRequest(_recoveryGeneration, blockLocator);
+       
+        return new MessageImpl(
+                request,
+                RecoveryMessageTypes.BLOCK_SYNC_REQUEST,
+                messageSize
+        );
+    }
+    
+    private Message createSyncResponseMessage(List<String> missingBlockHashes, long recoveryNumber) {
+	    int messageSize = MESSAGE_HEADER_BYTE_SIZE
+	    		+ Long.BYTES
+	            + missingBlockHashes.size() * BLOCK_HASH_BYTE_SIZE;
+
+	    BlockSyncResponse response = new BlockSyncResponse(recoveryNumber, missingBlockHashes);
+
+		return new MessageImpl(
+					response,
+					RecoveryMessageTypes.BLOCK_SYNC_RESPONSE,
+					messageSize
+		);
+	}
+    
+    
+    private P2PNetworkEndpoint selectSyncPeer() {
+        return _networkInterface.getNeighbors()
+                .stream()
+                .filter(peer -> !attemptedPeers.contains(peer))
+                .findAny()
+                .orElse(null);
+    }
+    
+    private P2PNetworkEndpoint selectRetryPeer(P2PNetworkEndpoint previousPeer) {
+	    return _networkInterface.getNeighbors().stream()
+	            .filter(peer -> !peer.equals(previousPeer))
+	            .findAny()
+	            .orElse(previousPeer);
+	}
+    
+    // This method creates a block locator.
+    // The blocks are sorted from highest (tip) to lowest.
+	// The first 10 blocks are included consecutively. After that, the step size doubles. 
+	// The genesis block is always included as the last entry.
+    private List<String> createBlockLocator() {
+    	
+    	List<String> blockLocator = new ArrayList<>();
+        Block currentBlock = _context.getBlockchain().getPreferredTipOfLongestChains();
+        int step = 1;
+
+        while (currentBlock != null) {
+            blockLocator.add(currentBlock.getHash());
+
+            if (blockLocator.size() > 10) {
+                step *= 2;
+            }
+            
+         // Go backwards by 'step' blocks, skipping intermediate hashes.
+         // If the genesis block is reached, add it to block locator
+         // Stop if a predecessor block cannot be found.
+            for (int i = 0; i < step; i++) {
+                String previousHash = currentBlock.getPreviousHash();
+
+                if (previousHash == null) {
+                    String genesisHash = currentBlock.getHash();
+
+                    if (!blockLocator.get(blockLocator.size() - 1).equals(genesisHash)) {
+                        blockLocator.add(genesisHash);
+                    }
+
+                    return blockLocator;
+                }
+
+                currentBlock = _context.getBlockchain().getBlock(previousHash);
+
+                if (currentBlock == null) {
+                    return blockLocator;
+                }
+            }
+        }
+
+        return blockLocator;
+    }
+	
+	private void requestNextSyncBatch() {
+	    if (syncPeer == null) {
+	        return;
+	    }
+	    sendSyncRequest(syncPeer);
 	}
 	
 	private boolean checkSyncRoundCompleted() {
@@ -323,15 +326,14 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	
 	private void requestBlock(String blockHash, P2PNetworkEndpoint peer, boolean retry) {
 		if (blockHash == null) {
-		    new Exception("NULL BLOCK HASH | retry=" + retry)
-		        .printStackTrace();
+		    System.err.println("null block hash was passed when requesting a block.");
 		    return;
 		}
-		_blockAttemptId++;
-		PendingBlockRequest pendingRequest = new PendingBlockRequest(_blockAttemptId, peer);
+		_blockRequestAttemptId++;
+		PendingBlockRequest pendingRequest = new PendingBlockRequest(_blockRequestAttemptId, peer);
 		pendingBlockRequests.put(blockHash, pendingRequest);
 		
-		RecoveryTimeoutRequest request = new RecoveryTimeoutRequest(RecoveryTimeoutType.BLOCK_RESPONSE, _blockAttemptId, blockHash);
+		RecoveryTimeoutRequest request = new RecoveryTimeoutRequest(RecoveryTimeoutType.BLOCK_RESPONSE, _blockRequestAttemptId, blockHash);
 		onRecoveryTimeoutRequestedCallback.accept(request);
 		
 		if (retry) {
@@ -343,13 +345,13 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	
 	@Override
 	public void handleSyncResponseTimeout(long attemptId) {
-	    if (attemptId != _syncAttemptId || !waitingForSyncResponse) {
+	    if (attemptId != _syncRequestAttemptId || !waitingForSyncResponse) {
 	        return;
 	    }
 
 	    syncPeer = selectSyncPeer();
 	    
-	    // If all peers have been requested, request again
+	    // If all peers have been requested, request old peers again
 	    if (syncPeer == null) {
 	        attemptedPeers.clear();
 	        syncPeer = selectSyncPeer();
@@ -363,6 +365,19 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	    }
 	    
 	    sendSyncRequest(syncPeer);
+	}
+	
+	@Override
+	public void handleBlockResponseTimeout(String blockHash, long attemptId) {
+		PendingBlockRequest request = pendingBlockRequests.get(blockHash);
+
+	    if (request == null) return;
+
+	    if (request.getAttemptId() != attemptId) return;
+	    
+	    P2PNetworkEndpoint retryPeer = selectRetryPeer(request.getPeer());
+
+	    requestBlock(blockHash, retryPeer, true);
 	}
 	
 	
@@ -380,7 +395,6 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 	
 	@Override
 	public void onP2PMessageDropped(Message message, P2PNetworkEndpoint recipient) {
-		// TODO 
 	}
 
 	@Override
@@ -414,29 +428,8 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 		
 	}
 	
+	@Override
 	public void setOnRecoveryTimeoutRequestedCallback(Consumer<RecoveryTimeoutRequest> callback) {
 	    this.onRecoveryTimeoutRequestedCallback = callback;
-	}
-
-
-	@Override
-	public void handleBlockResponseTimeout(String blockHash, long attemptId) {
-		PendingBlockRequest request = pendingBlockRequests.get(blockHash);
-
-	    if (request == null) return;
-
-	    if (request.getAttemptId() != attemptId) return;
-	    
-	    P2PNetworkEndpoint retryPeer = selectBlockRetryPeer(request.getPeer());
-
-	    requestBlock(blockHash, retryPeer, true);
-	}
-		
-	
-	private P2PNetworkEndpoint selectBlockRetryPeer(P2PNetworkEndpoint previousPeer) {
-	    return _networkInterface.getNeighbors().stream()
-	            .filter(peer -> !peer.equals(previousPeer))
-	            .findAny()
-	            .orElse(previousPeer);
 	}
 }

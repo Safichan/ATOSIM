@@ -102,7 +102,9 @@ public class ThreesimSimulationFactory implements SimulationFactory {
                     TransactionGenerationMode.valueOf(configuration.getAttribute(
                             ThreesimAttributes.TRANSACTION_GENERATION_MODE, ThreesimAttributes.TRANSACTION_GENERATION_MODE_DEFAULT)),
                     Boolean.parseBoolean(configuration.getAttribute(
-                            ThreesimAttributes.STATIC_VALIDATION_DELAY_ENABLED, ThreesimAttributes.STATIC_VALIDATION_DELAY_ENABLED_DEFAULT))
+                            ThreesimAttributes.STATIC_VALIDATION_DELAY_ENABLED, ThreesimAttributes.STATIC_VALIDATION_DELAY_ENABLED_DEFAULT)),
+                    // The recovery timeout is as long as a block interval
+                    (long) Double.parseDouble(configuration.getAttribute(ThreesimAttributes.BLOCK_INTERVAL, ThreesimAttributes.BLOCK_INTERVAL_DEFAULT))
             );
 
             String attackModelPath = configuration.getAttribute(

@@ -102,7 +102,8 @@ public class AttackModelMapper {
                 base.getMaxBlockSize(),
                 base.getNetworkBandwidth(),
                 base.getTransactionGenerationMode(),
-                base.isStaticValidationDelayEnabled()
+                base.isStaticValidationDelayEnabled(),
+                base.getRecoveryTimeoutDuration()
         );
     }
 

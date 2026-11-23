@@ -49,13 +49,13 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     private final BlockchainSystemNodeBehavior _behavior;
     private final GeographicalRegion _geographicalRegion;
     private final Set<String> _tags;
+    private final long _recoveryTimeoutDuration;
 
     private final BlockchainSystemNodeContext _context;
     
     private NodeMode _currentMode;
     private RecoveryStrategy _recoveryStrategy;
     private MessageDispatcher _messageDispatcher;
-    
 
     public BlockchainSystemNode(
             String id,
@@ -73,7 +73,8 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
             BlockFactory blockFactory,
             BlockchainSystemNodeBehavior behavior,
             GeographicalRegion geographicalRegion,
-            Set<String> tags
+            Set<String> tags,
+            long recoveryTimeoutDuration
     ) {
         super(id, name);
         _blockPropagationStrategy = blockPropagationStrategy;
@@ -90,6 +91,7 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         _behavior = behavior;
         _geographicalRegion = geographicalRegion;
         _tags = tags;
+        _recoveryTimeoutDuration = recoveryTimeoutDuration;
 
         _context = new BlockchainSystemNodeContextImpl(
                 id,
@@ -125,9 +127,7 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         
         _recoveryStrategy = new BlocksFirstRecovery(_networkInterface, _context, _blockPropagationStrategy);
         _recoveryStrategy.setOnRecoveryCompletedCallback(() -> finishRecovery());
-        _recoveryStrategy.setOnRecoveryTimeoutRequestedCallback(
-                (request) -> scheduleRecoveryTimeout(request)
-        );
+        _recoveryStrategy.setOnRecoveryTimeoutRequestedCallback((request) -> scheduleRecoveryTimeout(request));
         
         _messageDispatcher = new MessageDispatcher(_networkInterface);
         _messageDispatcher.setBlockPropagationStrategy(_blockPropagationStrategy);
@@ -180,14 +180,9 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     	if (CrashEvent.EVENT_TYPE.equals(event.getEventType())) {
     		if(!(_currentMode instanceof NormalMode)) return;
     		
-            CrashEvent crashEvent;
-            if(event instanceof CrashEvent) {
-            	crashEvent = (CrashEvent) event;
-            	crash();
-            } else {
-            	System.err.println("Not a crash event was passed in.");
-            	return;
-            }
+            CrashEvent crashEvent = (CrashEvent) event;
+            crash();
+            
             // Schedule the recovery event
             long recoveryTime = crashEvent.getOccurrenceTime() + crashEvent.getCrashDuration();
             RecoveryEvent recoveryEvent = new RecoveryEvent(recoveryTime, this);
@@ -199,28 +194,21 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     		
     	} else if (RecoveryTimeoutEvent.EVENT_TYPE.equals(event.getEventType())) {
     		if(!(_currentMode instanceof RecoveryMode)) return;
-    		RecoveryTimeoutEvent recoveryTimeoutEvent;
-    		if(event instanceof RecoveryTimeoutEvent) {
-    			recoveryTimeoutEvent = (RecoveryTimeoutEvent) event;
-    			
-    			switch(recoveryTimeoutEvent.getTimeoutType()) {
-	    			case RecoveryTimeoutType.SYNC_RESPONSE -> {
-	    				_recoveryStrategy.handleSyncResponseTimeout(
-	    				        recoveryTimeoutEvent.getAttemptId()
-	    				);
-	    			}
-	    			case RecoveryTimeoutType.BLOCK_RESPONSE -> {
-	    				_recoveryStrategy.handleBlockResponseTimeout(
-	    				        recoveryTimeoutEvent.getBlockHash(),
-	    				        recoveryTimeoutEvent.getAttemptId()
-	    				);
-	    			}
+    		
+    		RecoveryTimeoutEvent recoveryTimeoutEvent = (RecoveryTimeoutEvent) event;
+			switch(recoveryTimeoutEvent.getTimeoutType()) {
+    			case RecoveryTimeoutType.SYNC_RESPONSE -> {
+    				_recoveryStrategy.handleSyncResponseTimeout(
+    				        recoveryTimeoutEvent.getAttemptId()
+    				);
     			}
-            	
-            } else {
-            	System.err.println("Not a recovery timeout event was passed in.");
-            	return;
-            }
+    			case RecoveryTimeoutType.BLOCK_RESPONSE -> {
+    				_recoveryStrategy.handleBlockResponseTimeout(
+    				        recoveryTimeoutEvent.getBlockHash(),
+    				        recoveryTimeoutEvent.getAttemptId()
+    				);
+    			}
+			}
     	}
     }
     
@@ -244,7 +232,7 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
     }
     
     private void scheduleRecoveryTimeout(RecoveryTimeoutRequest request) {
-    	long timeoutDuration = 445494L;
+    	long timeoutDuration = _recoveryTimeoutDuration;
     	long currentTime = getSimulationContext().getSystemClock().getCurrentTime();
     	RecoveryTimeoutEvent event = new RecoveryTimeoutEvent(
                 this,

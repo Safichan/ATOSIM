@@ -121,6 +121,7 @@ public class ATOSIMSimulationFactory implements Simulation {
                 Double.parseDouble(configuration.getOrDefault("reliabilityObservationTimespan", "24.0"));
         double blockInterval =
                 Double.parseDouble(configuration.getOrDefault("block_creation_interval", "600.0"));
+        long recoveryDuration = (long) blockInterval;
         int maxBlockSize =
                 Integer.parseInt(configuration.getOrDefault("max_block_size", "1000000"));
         double networkBandwidth =
@@ -261,7 +262,8 @@ public class ATOSIMSimulationFactory implements Simulation {
                 maxBlockSize,
                 networkBandwidth,
                 transactionGenerationMode,
-                staticValidationDelayEnabled
+                staticValidationDelayEnabled,
+                recoveryDuration
         );
     }
 

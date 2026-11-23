@@ -31,6 +31,7 @@ public class BlockchainSystemNodeFactory {
     private final GeographicalRegionsResolver _geographicalRegionsResolver;
     private final ResourcePowerCalculator _resourcePowerCalculator;
     private final BlockchainSystemNodeTagProvider _tagProvider;
+    private final long _recoveryTimeoutDuration;
 
     public BlockchainSystemNodeFactory(
             BlockFactory blockFactory,
@@ -45,7 +46,8 @@ public class BlockchainSystemNodeFactory {
             BlockchainSystemNodeBehaviorFactory behaviorFactory,
             GeographicalRegionsResolver geographicalRegionsResolver,
             ResourcePowerCalculator resourcePowerCalculator,
-            BlockchainSystemNodeTagProvider tagProvider
+            BlockchainSystemNodeTagProvider tagProvider,
+            long recoveryTimeoutDuration
     ) {
         _blockFactory = blockFactory;
         _blockchainFactory = blockchainFactory;
@@ -60,6 +62,7 @@ public class BlockchainSystemNodeFactory {
         _geographicalRegionsResolver = geographicalRegionsResolver;
         _resourcePowerCalculator = resourcePowerCalculator;
         _tagProvider = tagProvider;
+        _recoveryTimeoutDuration = recoveryTimeoutDuration;
     }
 
     public BlockchainSystemNode createBlockchainSystemNode(NodeP2PNetworkInterface networkInterface, Block genesisBlock) {
@@ -81,7 +84,8 @@ public class BlockchainSystemNodeFactory {
                 _blockFactory,
                 _behaviorFactory.create(nodeId),
                 _geographicalRegionsResolver.getGeographicalRegionOfNode(nodeId),
-                _tagProvider.getTags(nodeId)
+                _tagProvider.getTags(nodeId),
+                _recoveryTimeoutDuration
         );
     }
 }

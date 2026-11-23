@@ -61,7 +61,7 @@ public class MessageDispatcher {
             }
             case "TRX_INV", "TRX_GET_DATA", "TRX_MSG" -> {
             	if (_transactionPropagationStrategy != null) {
-            		_transactionPropagationStrategy.onP2PMessageReceived(message, recipient);
+            		_transactionPropagationStrategy.onP2PMessageDropped(message, recipient);
                 }
             }
         }

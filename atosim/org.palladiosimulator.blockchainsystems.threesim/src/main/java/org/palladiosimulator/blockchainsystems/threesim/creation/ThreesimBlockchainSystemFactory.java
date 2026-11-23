@@ -110,7 +110,8 @@ public abstract class ThreesimBlockchainSystemFactory {
                 params.getMaxBlockSize(),
                 params.getNetworkBandwidth(),
                 params.getTransactionGenerationMode(),
-                params.isStaticValidationDelayEnabled()
+                params.isStaticValidationDelayEnabled(),
+                params.getRecoveryTimeoutDuration()
         );
 
         ResourcePowerCalculator baseResourcePowerCalculator = getResourcePowerCalculator(networkCreationResult);
@@ -318,7 +319,8 @@ public abstract class ThreesimBlockchainSystemFactory {
                 new ThreesimBlockchainSystemNodeBehaviorFactory(effectiveParameters, rootSeed),
                 geographicalRegionsResolver,
                 resourcePowerCalculator,
-                new ThreesimBlockchainSystemNodeTagProvider()
+                new ThreesimBlockchainSystemNodeTagProvider(),
+                effectiveParameters.getRecoveryTimeoutDuration()
         );
     }
 }

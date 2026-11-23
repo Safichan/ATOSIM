@@ -25,6 +25,7 @@ public class ThreesimSimulationParameters {
     private final double networkBandwidth;
     private final TransactionGenerationMode transactionGenerationMode;
     private final boolean staticValidationDelayEnabled;
+    private final long recoveryTimeoutDuration;
 
     public ThreesimSimulationParameters(
             String configId,
@@ -46,7 +47,8 @@ public class ThreesimSimulationParameters {
             int maxBlockSize,
             double networkBandwidth,
             TransactionGenerationMode transactionGenerationMode,
-            boolean staticValidationDelayEnabled
+            boolean staticValidationDelayEnabled,
+            long recoveryTimeoutDuration
     ) {
         this.configId = configId != null ? configId : "";
         this.failureThroughputThreshold = failureThroughputThreshold;
@@ -69,6 +71,7 @@ public class ThreesimSimulationParameters {
         this.transactionGenerationMode =
                 transactionGenerationMode != null ? transactionGenerationMode : TransactionGenerationMode.MEMPOOL;
         this.staticValidationDelayEnabled = staticValidationDelayEnabled;
+        this.recoveryTimeoutDuration = recoveryTimeoutDuration;
     }
 
     public String getConfigId() { return configId; }
@@ -91,4 +94,5 @@ public class ThreesimSimulationParameters {
     public double getNetworkBandwidth() { return networkBandwidth; }
     public TransactionGenerationMode getTransactionGenerationMode() { return transactionGenerationMode; }
     public boolean isStaticValidationDelayEnabled() { return staticValidationDelayEnabled; }
+    public long getRecoveryTimeoutDuration() { return recoveryTimeoutDuration; }
 }

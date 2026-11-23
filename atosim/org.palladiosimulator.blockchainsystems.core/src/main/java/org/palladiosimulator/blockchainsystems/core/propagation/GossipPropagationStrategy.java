@@ -71,10 +71,6 @@ public abstract class GossipPropagationStrategy<E extends Propagatable>
         }
     }
 
-    /*private void failedToSendMessageToNetworkInterface(Message message, P2PNetworkEndpoint recipientNetworkEndpoint) {
-        handleMessageDropped(message, recipientNetworkEndpoint);
-    }*/
-
     @Override
     public void setNetworkInterface(NodeP2PNetworkInterface networkInterface) {
         _networkInterface = networkInterface;
