@@ -58,6 +58,7 @@ public class CrashSpecificationItemProvider extends ItemProviderAdapter implemen
 			addCrashEnabledPropertyDescriptor(object);
 			addCrashDurationPropertyDescriptor(object);
 			addUnavailableNodeFractionPropertyDescriptor(object);
+			addCrashStartAfterBlockIntervalsPropertyDescriptor(object);
 		}
 		return itemPropertyDescriptors;
 	}
@@ -111,6 +112,22 @@ public class CrashSpecificationItemProvider extends ItemProviderAdapter implemen
 	}
 
 	/**
+	 * This adds a property descriptor for the Crash Start After Block Intervals feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	protected void addCrashStartAfterBlockIntervalsPropertyDescriptor(Object object) {
+		itemPropertyDescriptors.add(createItemPropertyDescriptor(
+				((ComposeableAdapterFactory) adapterFactory).getRootAdapterFactory(), getResourceLocator(),
+				getString("_UI_CrashSpecification_crashStartAfterBlockIntervals_feature"),
+				getString("_UI_PropertyDescriptor_description",
+						"_UI_CrashSpecification_crashStartAfterBlockIntervals_feature", "_UI_CrashSpecification_type"),
+				BlockchainsystemPackage.Literals.CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS, true, false,
+				false, ItemPropertyDescriptor.INTEGRAL_VALUE_IMAGE, null, null));
+	}
+
+	/**
 	 * This returns CrashSpecification.gif.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -158,6 +175,7 @@ public class CrashSpecificationItemProvider extends ItemProviderAdapter implemen
 		case BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_ENABLED:
 		case BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_DURATION:
 		case BlockchainsystemPackage.CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION:
+		case BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS:
 			fireNotifyChanged(new ViewerNotification(notification, notification.getNotifier(), false, true));
 			return;
 		}

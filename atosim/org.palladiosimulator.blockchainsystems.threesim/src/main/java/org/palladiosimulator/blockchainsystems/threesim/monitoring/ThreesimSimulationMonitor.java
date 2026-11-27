@@ -391,7 +391,7 @@ public class ThreesimSimulationMonitor implements SimulationMonitor {
         }
     
     	// No termination when there are crash events
-    	if (_crashPlan != null && _lastEventTimestamp < _crashPlan.getCrashTime()) {
+    	if (_crashPlan != null && _lastEventTimestamp < _crashPlan.getCrashStart()) {
     	    return false;
     	}
 

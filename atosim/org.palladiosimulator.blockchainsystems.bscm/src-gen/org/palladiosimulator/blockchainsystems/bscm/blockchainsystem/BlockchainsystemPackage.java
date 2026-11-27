@@ -252,13 +252,22 @@ public interface BlockchainsystemPackage extends EPackage {
 	int CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION = 2;
 
 	/**
+	 * The feature id for the '<em><b>Crash Start After Block Intervals</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS = 3;
+
+	/**
 	 * The number of structural features of the '<em>Crash Specification</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int CRASH_SPECIFICATION_FEATURE_COUNT = 3;
+	int CRASH_SPECIFICATION_FEATURE_COUNT = 4;
 
 	/**
 	 * Returns the meta object for class '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainSystem <em>Blockchain System</em>}'.
@@ -423,6 +432,17 @@ public interface BlockchainsystemPackage extends EPackage {
 	EAttribute getCrashSpecification_UnavailableNodeFraction();
 
 	/**
+	 * Returns the meta object for the attribute '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getCrashStartAfterBlockIntervals <em>Crash Start After Block Intervals</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Crash Start After Block Intervals</em>'.
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getCrashStartAfterBlockIntervals()
+	 * @see #getCrashSpecification()
+	 * @generated
+	 */
+	EAttribute getCrashSpecification_CrashStartAfterBlockIntervals();
+
+	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -576,6 +596,15 @@ public interface BlockchainsystemPackage extends EPackage {
 		 */
 		EAttribute CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION = eINSTANCE
 				.getCrashSpecification_UnavailableNodeFraction();
+
+		/**
+		 * The meta object literal for the '<em><b>Crash Start After Block Intervals</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS = eINSTANCE
+				.getCrashSpecification_CrashStartAfterBlockIntervals();
 
 	}
 

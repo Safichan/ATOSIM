@@ -173,6 +173,8 @@
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="crashDuration" eType="ecore:EDataType platform:/plugin/org.eclipse.emf.ecore/model/Ecore.ecore#//EDouble"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="unavailableNodeFraction"
           eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="crashStartAfterBlockIntervals"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
     </eClassifiers>
   </eSubpackages>
   <eSubpackages name="nodeenvironment" nsURI="http://palladiosimulator.org/BlockchainSystemComponentModel/NodeEnvironment/1.0"

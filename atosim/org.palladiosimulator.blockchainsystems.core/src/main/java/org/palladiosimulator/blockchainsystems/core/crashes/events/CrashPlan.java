@@ -5,12 +5,12 @@ import java.util.Set;
 public class CrashPlan {
 	
 	private final Set<String> crashingNodeIds;
-    private final long crashTime;
+    private final long crashStart;
     private final long crashDuration;
 
     public CrashPlan(Set<String> crashingNodeIds, long crashTime, long crashDuration) {
         this.crashingNodeIds = Set.copyOf(crashingNodeIds);
-        this.crashTime = crashTime;
+        this.crashStart = crashTime;
         this.crashDuration = crashDuration;
     }
 
@@ -18,8 +18,8 @@ public class CrashPlan {
         return crashingNodeIds;
     }
 
-    public long getCrashTime() {
-        return crashTime;
+    public long getCrashStart() {
+        return crashStart;
     }
 
     public long getCrashDuration() {

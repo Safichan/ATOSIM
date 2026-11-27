@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.EObject;
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#isCrashEnabled <em>Crash Enabled</em>}</li>
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getCrashDuration <em>Crash Duration</em>}</li>
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getUnavailableNodeFraction <em>Unavailable Node Fraction</em>}</li>
+ *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getCrashStartAfterBlockIntervals <em>Crash Start After Block Intervals</em>}</li>
  * </ul>
  *
  * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainsystemPackage#getCrashSpecification()
@@ -88,5 +89,27 @@ public interface CrashSpecification extends EObject {
 	 * @generated
 	 */
 	void setUnavailableNodeFraction(double value);
+
+	/**
+	 * Returns the value of the '<em><b>Crash Start After Block Intervals</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Crash Start After Block Intervals</em>' attribute.
+	 * @see #setCrashStartAfterBlockIntervals(int)
+	 * @see org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.BlockchainsystemPackage#getCrashSpecification_CrashStartAfterBlockIntervals()
+	 * @model
+	 * @generated
+	 */
+	int getCrashStartAfterBlockIntervals();
+
+	/**
+	 * Sets the value of the '{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecification#getCrashStartAfterBlockIntervals <em>Crash Start After Block Intervals</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Crash Start After Block Intervals</em>' attribute.
+	 * @see #getCrashStartAfterBlockIntervals()
+	 * @generated
+	 */
+	void setCrashStartAfterBlockIntervals(int value);
 
 } // CrashSpecification

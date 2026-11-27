@@ -150,7 +150,7 @@ public abstract class ThreesimBlockchainSystemFactory {
     	if (crashSpec != null && crashSpec.isCrashEnabled()) {
         	double nodeFraction = crashSpec.getUnavailableNodeFraction();
             long crashDuration = (long) (crashSpec.getCrashDuration() * params.getBlockInterval());
-            long crashTime = (long) (params.getBlockInterval() * 5);
+            long crashStart = (long) (params.getBlockInterval() * crashSpec.getCrashStartAfterBlockIntervals());
             
             List<String> listOfHonestNodeIds = networkCreationResult.getCreatedNetwork().getNodes()
             		.stream()
@@ -172,7 +172,7 @@ public abstract class ThreesimBlockchainSystemFactory {
                 crashingNodes.add(listOfHonestNodeIds.remove(randomIndex));
             }
             
-            return new CrashPlan(crashingNodes, crashTime, crashDuration);
+            return new CrashPlan(crashingNodes, crashStart, crashDuration);
         } else {
         	return null;
         }

@@ -376,6 +376,16 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 	 * @generated
 	 */
 	@Override
+	public EAttribute getCrashSpecification_CrashStartAfterBlockIntervals() {
+		return (EAttribute) crashSpecificationEClass.getEStructuralFeatures().get(3);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public BlockchainsystemFactory getBlockchainsystemFactory() {
 		return (BlockchainsystemFactory) getEFactoryInstance();
 	}
@@ -418,6 +428,7 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 		createEAttribute(crashSpecificationEClass, CRASH_SPECIFICATION__CRASH_ENABLED);
 		createEAttribute(crashSpecificationEClass, CRASH_SPECIFICATION__CRASH_DURATION);
 		createEAttribute(crashSpecificationEClass, CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION);
+		createEAttribute(crashSpecificationEClass, CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS);
 	}
 
 	/**
@@ -508,6 +519,9 @@ public class BlockchainsystemPackageImpl extends EPackageImpl implements Blockch
 				!IS_DERIVED, IS_ORDERED);
 		initEAttribute(getCrashSpecification_UnavailableNodeFraction(), ecorePackage.getEDouble(),
 				"unavailableNodeFraction", null, 0, 1, CrashSpecification.class, !IS_TRANSIENT, !IS_VOLATILE,
+				IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getCrashSpecification_CrashStartAfterBlockIntervals(), ecorePackage.getEInt(),
+				"crashStartAfterBlockIntervals", null, 0, 1, CrashSpecification.class, !IS_TRANSIENT, !IS_VOLATILE,
 				IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Create resource

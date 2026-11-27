@@ -23,6 +23,7 @@ import org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.CrashSpecif
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.CrashSpecificationImpl#isCrashEnabled <em>Crash Enabled</em>}</li>
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.CrashSpecificationImpl#getCrashDuration <em>Crash Duration</em>}</li>
  *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.CrashSpecificationImpl#getUnavailableNodeFraction <em>Unavailable Node Fraction</em>}</li>
+ *   <li>{@link org.palladiosimulator.blockchainsystems.bscm.blockchainsystem.impl.CrashSpecificationImpl#getCrashStartAfterBlockIntervals <em>Crash Start After Block Intervals</em>}</li>
  * </ul>
  *
  * @generated
@@ -87,6 +88,26 @@ public class CrashSpecificationImpl extends MinimalEObjectImpl.Container impleme
 	 * @ordered
 	 */
 	protected double unavailableNodeFraction = UNAVAILABLE_NODE_FRACTION_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #getCrashStartAfterBlockIntervals() <em>Crash Start After Block Intervals</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getCrashStartAfterBlockIntervals()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final int CRASH_START_AFTER_BLOCK_INTERVALS_EDEFAULT = 0;
+
+	/**
+	 * The cached value of the '{@link #getCrashStartAfterBlockIntervals() <em>Crash Start After Block Intervals</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #getCrashStartAfterBlockIntervals()
+	 * @generated
+	 * @ordered
+	 */
+	protected int crashStartAfterBlockIntervals = CRASH_START_AFTER_BLOCK_INTERVALS_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -186,6 +207,31 @@ public class CrashSpecificationImpl extends MinimalEObjectImpl.Container impleme
 	 * @generated
 	 */
 	@Override
+	public int getCrashStartAfterBlockIntervals() {
+		return crashStartAfterBlockIntervals;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public void setCrashStartAfterBlockIntervals(int newCrashStartAfterBlockIntervals) {
+		int oldCrashStartAfterBlockIntervals = crashStartAfterBlockIntervals;
+		crashStartAfterBlockIntervals = newCrashStartAfterBlockIntervals;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET,
+					BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS,
+					oldCrashStartAfterBlockIntervals, crashStartAfterBlockIntervals));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public Object eGet(int featureID, boolean resolve, boolean coreType) {
 		switch (featureID) {
 		case BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_ENABLED:
@@ -194,6 +240,8 @@ public class CrashSpecificationImpl extends MinimalEObjectImpl.Container impleme
 			return getCrashDuration();
 		case BlockchainsystemPackage.CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION:
 			return getUnavailableNodeFraction();
+		case BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS:
+			return getCrashStartAfterBlockIntervals();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -214,6 +262,9 @@ public class CrashSpecificationImpl extends MinimalEObjectImpl.Container impleme
 			return;
 		case BlockchainsystemPackage.CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION:
 			setUnavailableNodeFraction((Double) newValue);
+			return;
+		case BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS:
+			setCrashStartAfterBlockIntervals((Integer) newValue);
 			return;
 		}
 		super.eSet(featureID, newValue);
@@ -236,6 +287,9 @@ public class CrashSpecificationImpl extends MinimalEObjectImpl.Container impleme
 		case BlockchainsystemPackage.CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION:
 			setUnavailableNodeFraction(UNAVAILABLE_NODE_FRACTION_EDEFAULT);
 			return;
+		case BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS:
+			setCrashStartAfterBlockIntervals(CRASH_START_AFTER_BLOCK_INTERVALS_EDEFAULT);
+			return;
 		}
 		super.eUnset(featureID);
 	}
@@ -254,6 +308,8 @@ public class CrashSpecificationImpl extends MinimalEObjectImpl.Container impleme
 			return crashDuration != CRASH_DURATION_EDEFAULT;
 		case BlockchainsystemPackage.CRASH_SPECIFICATION__UNAVAILABLE_NODE_FRACTION:
 			return unavailableNodeFraction != UNAVAILABLE_NODE_FRACTION_EDEFAULT;
+		case BlockchainsystemPackage.CRASH_SPECIFICATION__CRASH_START_AFTER_BLOCK_INTERVALS:
+			return crashStartAfterBlockIntervals != CRASH_START_AFTER_BLOCK_INTERVALS_EDEFAULT;
 		}
 		return super.eIsSet(featureID);
 	}
@@ -275,6 +331,8 @@ public class CrashSpecificationImpl extends MinimalEObjectImpl.Container impleme
 		result.append(crashDuration);
 		result.append(", unavailableNodeFraction: ");
 		result.append(unavailableNodeFraction);
+		result.append(", crashStartAfterBlockIntervals: ");
+		result.append(crashStartAfterBlockIntervals);
 		result.append(')');
 		return result.toString();
 	}

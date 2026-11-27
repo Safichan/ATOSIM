@@ -72,7 +72,7 @@ public class BlockchainSystem extends BlockchainSimulationObject {
         	for (BlockchainSystemNode node : _nodes) {
                 if (crashingNodeIds.contains(node.getId())) {
                     CrashEvent crashEvent = 
-                    		new CrashEvent(node, _crashPlan.getCrashTime(), _crashPlan.getCrashDuration());
+                    		new CrashEvent(node, _crashPlan.getCrashStart(), _crashPlan.getCrashDuration());
                     getSimulationContext().getEventCoordinator().raiseEvent(crashEvent);
                 }
             }
