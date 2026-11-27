@@ -16,6 +16,7 @@ public class MessageDispatcher {
 	private P2PMessageHandler _recoveryStrategy;
 	private P2PMessageHandler _transactionPropagationStrategy;
 	private BooleanSupplier _crashStateSupplier = () -> false;
+	private BooleanSupplier _recoveryStateSupplier = () -> false;
 	
 	public MessageDispatcher(NodeP2PNetworkInterface networkInterface) {
         setNetworkInterface(networkInterface);
@@ -31,7 +32,12 @@ public class MessageDispatcher {
             		_blockPropagationStrategy.onP2PMessageReceived(message, sender);
             	}
             }
-            case RecoveryMessageTypes.BLOCK_SYNC_REQUEST, RecoveryMessageTypes.BLOCK_SYNC_RESPONSE -> {
+            case RecoveryMessageTypes.BLOCK_SYNC_REQUEST -> {
+            	if (_recoveryStrategy != null && !_recoveryStateSupplier.getAsBoolean()) {
+                    _recoveryStrategy.onP2PMessageReceived(message, sender);
+                }
+            }
+            case RecoveryMessageTypes.BLOCK_SYNC_RESPONSE -> {
             	if (_recoveryStrategy != null) {
                     _recoveryStrategy.onP2PMessageReceived(message, sender);
                 }
@@ -81,6 +87,10 @@ public class MessageDispatcher {
 	
 	public void setCrashStateSupplier(BooleanSupplier crashStateSupplier) {
 		_crashStateSupplier = crashStateSupplier;
+	}
+	
+	public void setRecoveryStateSupplier(BooleanSupplier recoveryStateSupplier) {
+		_recoveryStateSupplier = recoveryStateSupplier;
 	}
 
 

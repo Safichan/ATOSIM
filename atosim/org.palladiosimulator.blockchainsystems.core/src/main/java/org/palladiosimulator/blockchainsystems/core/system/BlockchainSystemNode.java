@@ -133,7 +133,8 @@ public class BlockchainSystemNode extends BlockchainSimulationObject implements 
         _messageDispatcher.setBlockPropagationStrategy(_blockPropagationStrategy);
         _messageDispatcher.setRecoveryStrategy(_recoveryStrategy);
         _messageDispatcher.setTransactionPropagationStrategy(_transactionPropagationStrategy);
-        _messageDispatcher.setCrashStateSupplier(() -> _currentMode instanceof CrashMode);
+        _messageDispatcher.setCrashStateSupplier(() -> isCrashed());
+        _messageDispatcher.setRecoveryStateSupplier(() -> isRecovering());
         
         _blockPropagationStrategy.setBlockchainSystemNodeContext(_context);
         _blockPropagationStrategy.setOnReceivedCallback(b -> _currentMode.onBlockReceived(b, _context));
