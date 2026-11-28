@@ -375,6 +375,21 @@ public class BlocksFirstRecovery implements RecoveryStrategy {
 
 	    if (request.getAttemptId() != attemptId) return;
 	    
+	    if (_context.getBlockchain().hasBlockWithHash(blockHash)) {
+	        pendingBlockRequests.remove(blockHash);
+
+	        if (!pendingRequestQueue.isEmpty() && syncPeer != null) {
+	            String hash = pendingRequestQueue.poll();
+	            requestBlock(hash, syncPeer, false);
+	        }
+
+	        if (!waitingForSyncResponse && checkSyncRoundCompleted()) {
+	            requestNextSyncBatch();
+	        }
+
+	        return;
+	    }
+	    
 	    P2PNetworkEndpoint retryPeer = selectRetryPeer(request.getPeer());
 
 	    requestBlock(blockHash, retryPeer, true);

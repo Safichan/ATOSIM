@@ -33,7 +33,7 @@ public class MessageDispatcher {
             	}
             }
             case RecoveryMessageTypes.BLOCK_SYNC_REQUEST -> {
-            	if (_recoveryStrategy != null && !_recoveryStateSupplier.getAsBoolean()) {
+            	if (_recoveryStrategy != null /* && !_recoveryStateSupplier.getAsBoolean()*/) {
                     _recoveryStrategy.onP2PMessageReceived(message, sender);
                 }
             }
